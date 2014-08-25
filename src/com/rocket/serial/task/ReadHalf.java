@@ -1,0 +1,80 @@
+package com.rocket.serial.task;
+
+import gnu.io.SerialPort;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+
+
+
+
+public class ReadHalf extends SwingWorker<Void, Void> {
+	
+	private JTextField showNumTextField;
+	
+	private static OutputStream out = null;
+	private static InputStream in = null;
+	private static SerialPort serialPort = null;
+	
+	public ReadHalf(){
+		super();
+	}
+	
+	public ReadHalf(JTextField showNumTextField,OutputStream out,InputStream in,SerialPort serialPort){
+		super();
+		this.showNumTextField = showNumTextField;
+		this.in = in;
+		this.out = out;
+		this.serialPort = serialPort;
+	}
+	@Override
+	protected Void doInBackground() throws Exception {
+		// TODO Auto-generated method stub
+
+		serialPort.enableReceiveThreshold(9);
+		while(!isCancelled()){
+			readhalf();
+			Thread.sleep(100);
+		}
+		
+		return null;
+	}
+	
+	public void readhalf(){
+		byte[] re = new byte[10];
+		byte[] command = new byte[10];
+		command[0] = 0x0E;
+		command[1] = 0x0D;
+		command[2] = 0x0B;
+		command[3] = 0x04;
+		command[4] = (byte) 0xFF;
+		command[5] = (byte) 0xFF;
+		command[6] = (byte) 0xFF;
+		command[7] = (byte) 0xFF;
+		command[8] = 0x00;
+		for(int i =0;i < 8;i++){
+			command[8] ^= command[i];
+		}
+		
+		try {
+			
+			out.write(command, 0, 9);
+			while(in.read(re) > 0){
+				re[9] = 0;
+				for(int i =0;i < 9;i++){
+					re[9] ^= re[i];
+				}
+				if(re[9] == 0){
+					//showAddrTextField.setText(String.valueOf(re[5]&0xFF));
+					showNumTextField.setText(Integer.toHexString(re[7]&0xFF).toUpperCase() + " "+Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[5]&0xFF).toUpperCase());
+					break;
+				}
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+}
