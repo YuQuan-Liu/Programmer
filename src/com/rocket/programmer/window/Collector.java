@@ -30,6 +30,13 @@ public class Collector extends JDialog {
 	private JLabel label_1;
 	private JButton readCountBtn;
 
+	static int isE = 0;
+	static int isD = 0;
+	static int isA = 0;
+	static int isData = 0;
+	static int countdata = 0;
+	static int dataFinish = 0;
+	
 	final JPanel panel = new JPanel();
 	final JPanel panel_1 = new JPanel();
 	private JButton writeIAPBtn;
@@ -177,18 +184,32 @@ public class Collector extends JDialog {
 		
 		try {
 			
-			MainWindow.serialPort.enableReceiveThreshold(10);
+			MainWindow.serialPort.enableReceiveThreshold(1);
 			MainWindow.out.write(command, 0, 10);
-			while(MainWindow.in.read(re) > 0){
-				re[10] = 0;
-				for(int i =0;i < 10;i++){
-					re[10] ^= re[i];
-				}
-				if(re[10] == 0 && re[3] == 0x03){
-//					showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
-					showAddrTextField.setText(Integer.toHexString(re[5]&0xFF).toUpperCase() + " " +Integer.toHexString(re[6]&0xFF).toUpperCase());
+			byte[] in = new byte[10];
+			countdata = 0;
+			isE = 0;
+			isD = 0;
+			isA = 0;
+			isData = 0;
+			dataFinish = 0;
+			
+			while(MainWindow.in.read(in) > 0){
+				
+				readBytesCollector(in, re,10);
+				if(dataFinish == 1){
 					break;
 				}
+				
+			}
+			
+			re[10] = 0;
+			for(int i =0;i < 10;i++){
+				re[10] ^= re[i];
+			}
+			if(re[10] == 0 && re[3] == 0x03){
+//				showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
+				showAddrTextField.setText(Integer.toHexString(re[5]&0xFF).toUpperCase() + " " +Integer.toHexString(re[6]&0xFF).toUpperCase());
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -215,18 +236,32 @@ public class Collector extends JDialog {
 		
 		try {
 			
-			MainWindow.serialPort.enableReceiveThreshold(10);
+			
+			MainWindow.serialPort.enableReceiveThreshold(1);
 			MainWindow.out.write(command, 0, 10);
-			while(MainWindow.in.read(re) > 0){
-				re[10] = 0;
-				for(int i =0;i < 10;i++){
-					re[10] ^= re[i];
-				}
-				if(re[10] == 0 && re[3] == 0x04){
-//					showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
-					showCountTextField.setText(String.valueOf(re[4]&0xFF));
+			byte[] in = new byte[10];
+			countdata = 0;
+			isE = 0;
+			isD = 0;
+			isA = 0;
+			isData = 0;
+			dataFinish = 0;
+			
+			while(MainWindow.in.read(in) > 0){
+				
+				readBytesCollector(in, re,10);
+				if(dataFinish == 1){
 					break;
 				}
+				
+			}
+			re[10] = 0;
+			for(int i =0;i < 10;i++){
+				re[10] ^= re[i];
+			}
+			if(re[10] == 0 && re[3] == 0x04){
+//				showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
+				showCountTextField.setText(String.valueOf(re[4]&0xFF));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -382,21 +417,74 @@ public class Collector extends JDialog {
 		
 		try {
 			
-			MainWindow.serialPort.enableReceiveThreshold(10);
+			MainWindow.serialPort.enableReceiveThreshold(1);
 			MainWindow.out.write(command, 0, 10);
-			while(MainWindow.in.read(re) > 0){
-				re[10] = 0;
-				for(int i =0;i < 10;i++){
-					re[10] ^= re[i];
-				}
-				if(re[10] == 0 && re[3] == 0x06){
-//					showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
-					showCountTextField.setText("IAP:"+String.valueOf(re[8]&0xFF));
+			byte[] in = new byte[10];
+			countdata = 0;
+			isE = 0;
+			isD = 0;
+			isA = 0;
+			isData = 0;
+			dataFinish = 0;
+			
+			while(MainWindow.in.read(in) > 0){
+				
+				readBytesCollector(in, re,10);
+				if(dataFinish == 1){
 					break;
 				}
+				
+			}
+			re[10] = 0;
+			for(int i =0;i < 10;i++){
+				re[10] ^= re[i];
+			}
+			if(re[10] == 0 && re[3] == 0x06){
+//				showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
+				showCountTextField.setText("IAP:"+String.valueOf(re[8]&0xFF));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 	}
+	
+	public void readBytesCollector(byte[] in, byte[] re,int dataCount) {
+
+		if (isData == 0) {
+			
+			if(isE == 0){
+				if(in[0] == (byte) 0x0E){
+					isE = 1;
+				}
+			}else{
+				if(isD == 0){
+					if(in[0] == (byte) 0x0D){
+						isD = 1;
+					}
+				}else{
+					if(isA == 0){
+						if(in[0] == (byte) 0x0A){
+							isE = 0;
+							isD = 0;
+							isA = 0;
+							re[0] = 0x0E;
+							re[1] = 0x0D;
+							re[2] = 0x0A;
+							countdata = 3;
+							isData = 1;
+						}
+					}
+				}
+			}
+		} else {
+			re[countdata] = in[0];
+			countdata++;
+			if (countdata == dataCount) {
+				dataFinish = 1;
+				isData = 0;
+				countdata = 0;
+			}
+		}
+	}
+	
 }

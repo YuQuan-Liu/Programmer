@@ -8,6 +8,9 @@ import java.io.OutputStream;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import com.rocket.programmer.window.MainWindow;
+import com.rocket.programmer.window.Meter_NoEncrypt;
+
 
 
 
@@ -37,7 +40,7 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 		serialPort.enableReceiveThreshold(9);
 		while(!isCancelled()){
 			readhalf();
-			Thread.sleep(100);
+			Thread.sleep(300);
 		}
 		
 		return null;
@@ -62,16 +65,31 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 		try {
 			
 			out.write(command, 0, 9);
-			while(in.read(re) > 0){
-				re[9] = 0;
-				for(int i =0;i < 9;i++){
-					re[9] ^= re[i];
-				}
-				if(re[9] == 0){
-					//showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-					showNumTextField.setText(Integer.toHexString(re[7]&0xFF).toUpperCase() + " "+Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[5]&0xFF).toUpperCase());
+			
+			MainWindow.serialPort.enableReceiveThreshold(1);
+			byte[] inbyte = new byte[10];
+			Meter_NoEncrypt.countdata = 0;
+			Meter_NoEncrypt.isE = 0;
+			Meter_NoEncrypt.isD = 0;
+			Meter_NoEncrypt.isB = 0;
+			Meter_NoEncrypt.isData = 0;
+			Meter_NoEncrypt.dataFinish = 0;
+			
+			while(in.read(inbyte) > 0){
+				
+				Meter_NoEncrypt.readBytesMeter(inbyte, re, 9);
+				if(Meter_NoEncrypt.dataFinish == 1){
 					break;
 				}
+				
+			}
+			re[9] = 0;
+			for(int i =0;i < 9;i++){
+				re[9] ^= re[i];
+			}
+			if(re[9] == 0){
+				//showAddrTextField.setText(String.valueOf(re[5]&0xFF));
+				showNumTextField.setText(Integer.toHexString(re[7]&0xFF).toUpperCase() + " "+Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[5]&0xFF).toUpperCase());
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();

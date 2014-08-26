@@ -50,12 +50,16 @@ public class Meter_NoEncrypt extends JDialog {
 	final JButton badGayBtn = new JButton("BAD MAN");
 	final JButton goodManBtn = new JButton("GOOD MAN");
 
-	static int countdata = 0;
-	static int countFE = 0;
-	static int isData = 0;
-	static int dataLen = 0;
-	static int dataFinish = 0;
+	public static int countdata = 0;
+	public static int countFE = 0;
+	public static int isData = 0;
+	public static int dataLen = 0;
+	public static int dataFinish = 0;
 	private JTextField readNumTextField;
+	
+	public static int isE = 0;
+	public static int isD = 0;
+	public static int isB = 0;
 	
 	static byte[] key = new byte[8];
 	private final JButton writeIAPBtn = new JButton("IAP");
@@ -381,18 +385,32 @@ public class Meter_NoEncrypt extends JDialog {
 			
 			try {
 				
-				MainWindow.serialPort.enableReceiveThreshold(9);
+				MainWindow.serialPort.enableReceiveThreshold(1);
 				MainWindow.out.write(command, 0, 9);
-				while(MainWindow.in.read(re) > 0){
-					re[9] = 0;
-					for(int i =0;i < 9;i++){
-						re[9] ^= re[i];
-					}
-					if(re[9] == 0){
-						showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-						showNumTextField.setText(Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[7]&0xFF).toUpperCase());
+				byte[] in = new byte[10];
+				countdata = 0;
+				isE = 0;
+				isD = 0;
+				isB = 0;
+				isData = 0;
+				dataFinish = 0;
+				
+				while(MainWindow.in.read(in) > 0){
+					
+					readBytesMeter(in, re, 9);
+					if(dataFinish == 1){
 						break;
 					}
+					
+				}
+				
+				re[9] = 0;
+				for(int i =0;i < 9;i++){
+					re[9] ^= re[i];
+				}
+				if(re[9] == 0){
+					showAddrTextField.setText(String.valueOf(re[5]&0xFF));
+					showNumTextField.setText(Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[7]&0xFF).toUpperCase());
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -537,35 +555,48 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 
 			try {
-
-				MainWindow.serialPort.enableReceiveThreshold(9);
+				
+				MainWindow.serialPort.enableReceiveThreshold(1);
 				MainWindow.out.write(command, 0, 9);
-				while (MainWindow.in.read(re) > 0) {
-					re[9] = 0;
-					for (int i = 0; i < 9; i++) {
-						re[9] ^= re[i];
-					}
-					if (re[9] == 0) {
-						
-						if(addr.equals("")){
-							showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
-							showNumTextField.setText(Integer.toHexString(
-									re[6] & 0xFF).toUpperCase()
-									+ " "
-									+ Integer.toHexString(re[7] & 0xFF)
-											.toUpperCase());
-						}else{
-							showAddrTextField.setText(String.valueOf(re[4] & 0xFF));
-							showNumTextField.setText(Integer.toHexString(
-									re[6] & 0xFF).toUpperCase()
-									+ " "
-									+ Integer.toHexString(re[7] & 0xFF)
-											.toUpperCase());
-						}
-						
-						
+				byte[] in = new byte[10];
+				countdata = 0;
+				isE = 0;
+				isD = 0;
+				isB = 0;
+				isData = 0;
+				dataFinish = 0;
+				
+				while(MainWindow.in.read(in) > 0){
+					
+					readBytesMeter(in, re, 9);
+					if(dataFinish == 1){
 						break;
 					}
+					
+				}
+				
+				re[9] = 0;
+				for (int i = 0; i < 9; i++) {
+					re[9] ^= re[i];
+				}
+				if (re[9] == 0) {
+					
+					if(addr.equals("")){
+						showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
+						showNumTextField.setText(Integer.toHexString(
+								re[6] & 0xFF).toUpperCase()
+								+ " "
+								+ Integer.toHexString(re[7] & 0xFF)
+										.toUpperCase());
+					}else{
+						showAddrTextField.setText(String.valueOf(re[4] & 0xFF));
+						showNumTextField.setText(Integer.toHexString(
+								re[6] & 0xFF).toUpperCase()
+								+ " "
+								+ Integer.toHexString(re[7] & 0xFF)
+										.toUpperCase());
+					}
+					
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -722,31 +753,32 @@ public class Meter_NoEncrypt extends JDialog {
 			try {
 
 				MainWindow.out.write(command, 0, 9);
-				Thread.sleep(3);
+				Thread.sleep(300);
 				MainWindow.out.write(command, 0, 9);
 
-				command[3] = (byte) 0x03;
-				command[8] = 0x00;
-				for (int i = 0; i < 8; i++) {
-					command[8] ^= command[i];
-				}
-				MainWindow.serialPort.enableReceiveThreshold(9);
-				MainWindow.out.write(command, 0, 9);
-				while (MainWindow.in.read(re) > 0) {
-					re[9] = 0;
-					for (int i = 0; i < 9; i++) {
-						re[9] ^= re[i];
-					}
-					if (re[9] == 0) {
-						showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
-						showNumTextField.setText(Integer.toHexString(
-								re[6] & 0xFF).toUpperCase()
-								+ " "
-								+ Integer.toHexString(re[7] & 0xFF)
-										.toUpperCase());
-						break;
-					}
-				}
+				readAddr();
+//				command[3] = (byte) 0x03;
+//				command[8] = 0x00;
+//				for (int i = 0; i < 8; i++) {
+//					command[8] ^= command[i];
+//				}
+//				MainWindow.serialPort.enableReceiveThreshold(9);
+//				MainWindow.out.write(command, 0, 9);
+//				while (MainWindow.in.read(re) > 0) {
+//					re[9] = 0;
+//					for (int i = 0; i < 9; i++) {
+//						re[9] ^= re[i];
+//					}
+//					if (re[9] == 0) {
+//						showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
+//						showNumTextField.setText(Integer.toHexString(
+//								re[6] & 0xFF).toUpperCase()
+//								+ " "
+//								+ Integer.toHexString(re[7] & 0xFF)
+//										.toUpperCase());
+//						break;
+//					}
+//				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -904,7 +936,7 @@ public class Meter_NoEncrypt extends JDialog {
 			try {
 
 				MainWindow.out.write(command, 0, 9);
-				Thread.sleep(3);
+				Thread.sleep(300);
 				MainWindow.out.write(command, 0, 9);
 
 				command[3] = (byte) 0x06;
@@ -912,22 +944,37 @@ public class Meter_NoEncrypt extends JDialog {
 				for (int i = 0; i < 8; i++) {
 					command[8] ^= command[i];
 				}
-				MainWindow.serialPort.enableReceiveThreshold(9);
+				
+				MainWindow.serialPort.enableReceiveThreshold(1);
 				MainWindow.out.write(command, 0, 9);
-				while (MainWindow.in.read(re) > 0) {
-					re[9] = 0;
-					for (int i = 0; i < 9; i++) {
-						re[9] ^= re[i];
-					}
-					if (re[9] == 0) {
-						// showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-						showNumTextField.setText(Integer.toHexString(
-								re[6] & 0xFF).toUpperCase()
-								+ " "
-								+ Integer.toHexString(re[7] & 0xFF)
-										.toUpperCase());
+				byte[] in = new byte[10];
+				countdata = 0;
+				isE = 0;
+				isD = 0;
+				isB = 0;
+				isData = 0;
+				dataFinish = 0;
+				
+				while(MainWindow.in.read(in) > 0){
+					
+					readBytesMeter(in, re, 9);
+					if(dataFinish == 1){
 						break;
 					}
+					
+				}
+				
+				re[9] = 0;
+				for (int i = 0; i < 9; i++) {
+					re[9] ^= re[i];
+				}
+				if (re[9] == 0) {
+					// showAddrTextField.setText(String.valueOf(re[5]&0xFF));
+					showNumTextField.setText(Integer.toHexString(
+							re[6] & 0xFF).toUpperCase()
+							+ " "
+							+ Integer.toHexString(re[7] & 0xFF)
+									.toUpperCase());
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -962,22 +1009,36 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 
 			try {
-
-				MainWindow.serialPort.enableReceiveThreshold(9);
+				
+				MainWindow.serialPort.enableReceiveThreshold(1);
 				MainWindow.out.write(command, 0, 9);
-				while (MainWindow.in.read(re) > 0) {
-					re[9] = 0;
-					for (int i = 0; i < 9; i++) {
-						re[9] ^= re[i];
-					}
-					if (re[9] == 0 && re[3] == 0x07) {
-						// showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-						// showNumTextField.setText(Integer.toHexString(re[6]&0xFF).toUpperCase()
-						// + " "
-						// +Integer.toHexString(re[7]&0xFF).toUpperCase());
-						nationalCheckBox.setSelected(true);
+				byte[] in = new byte[10];
+				countdata = 0;
+				isE = 0;
+				isD = 0;
+				isB = 0;
+				isData = 0;
+				dataFinish = 0;
+				
+				while(MainWindow.in.read(in) > 0){
+					
+					readBytesMeter(in, re, 9);
+					if(dataFinish == 1){
 						break;
 					}
+					
+				}
+				
+				re[9] = 0;
+				for (int i = 0; i < 9; i++) {
+					re[9] ^= re[i];
+				}
+				if (re[9] == 0 && re[3] == 0x07) {
+					// showAddrTextField.setText(String.valueOf(re[5]&0xFF));
+					// showNumTextField.setText(Integer.toHexString(re[6]&0xFF).toUpperCase()
+					// + " "
+					// +Integer.toHexString(re[7]&0xFF).toUpperCase());
+					nationalCheckBox.setSelected(true);
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -1018,6 +1079,51 @@ public class Meter_NoEncrypt extends JDialog {
 			if (countdata >= 11 && countdata >= dataLen) {
 				dataFinish = 1;
 				dataLen = 0;
+				isData = 0;
+				countdata = 0;
+			}
+		}
+	}
+	
+	/**
+	 * 和MCU相同 接收数据
+	 * @param in
+	 * @param re
+	 * @param dataCount cjq 10 meter 9
+	 */
+	public static void readBytesMeter(byte[] in, byte[] re,int dataCount) {
+
+		if (isData == 0) {
+			
+			if(isE == 0){
+				if(in[0] == (byte) 0x0E){
+					isE = 1;
+				}
+			}else{
+				if(isD == 0){
+					if(in[0] == (byte) 0x0D){
+						isD = 1;
+					}
+				}else{
+					if(isB == 0){
+						if(in[0] == (byte) 0x0B){
+							isE = 0;
+							isD = 0;
+							isB = 0;
+							re[0] = 0x0E;
+							re[1] = 0x0D;
+							re[2] = 0x0B;
+							countdata = 3;
+							isData = 1;
+						}
+					}
+				}
+			}
+		} else {
+			re[countdata] = in[0];
+			countdata++;
+			if (countdata == dataCount) {
+				dataFinish = 1;
 				isData = 0;
 				countdata = 0;
 			}
