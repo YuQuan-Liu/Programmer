@@ -40,6 +40,7 @@ public class Collector extends JDialog {
 	final JPanel panel = new JPanel();
 	final JPanel panel_1 = new JPanel();
 	private JButton writeIAPBtn;
+	private JButton clearBtn;
 	/**
 	 * Launch the application.
 	 */
@@ -92,6 +93,17 @@ public class Collector extends JDialog {
 		label_1.setFont(new Font("宋体", Font.PLAIN, 14));
 		label_1.setBounds(202, 33, 57, 15);
 		panel.add(label_1);
+		
+		clearBtn = new JButton("清空");
+		clearBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				showAddrTextField.setText("");
+				showCountTextField.setText("");
+			}
+		});
+		clearBtn.setFont(new Font("宋体", Font.PLAIN, 12));
+		clearBtn.setBounds(415, 29, 93, 23);
+		panel.add(clearBtn);
 		
 		
 		panel_1.setBorder(new TitledBorder(null, "\u64CD\u4F5C", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -486,5 +498,4 @@ public class Collector extends JDialog {
 			}
 		}
 	}
-	
 }

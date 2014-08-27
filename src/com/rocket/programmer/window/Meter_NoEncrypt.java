@@ -63,6 +63,7 @@ public class Meter_NoEncrypt extends JDialog {
 	
 	static byte[] key = new byte[8];
 	private final JButton writeIAPBtn = new JButton("IAP");
+	private final JButton clearBtn = new JButton("清空");
 	/**
 	 * Launch the application.
 	 */
@@ -101,21 +102,22 @@ public class Meter_NoEncrypt extends JDialog {
 		panel.add(label);
 
 		showAddrTextField = new JTextField();
+		showAddrTextField.setToolTipText("高～～～～～低");
 		showAddrTextField.setFont(new Font("宋体", Font.PLAIN, 16));
 		showAddrTextField.setColumns(10);
-		showAddrTextField.setBounds(75, 19, 170, 41);
+		showAddrTextField.setBounds(75, 19, 198, 41);
 		panel.add(showAddrTextField);
 
 		label_1.setFont(new Font("宋体", Font.PLAIN, 14));
-		label_1.setBounds(255, 32, 49, 15);
+		label_1.setBounds(292, 32, 49, 15);
 		panel.add(label_1);
 
 		showNumTextField = new JTextField();
 		showNumTextField.setBackground(new Color(255, 255, 255));
 		showNumTextField.setForeground(new Color(0, 0, 0));
-		showNumTextField.setFont(new Font("宋体", Font.PLAIN, 12));
+		showNumTextField.setFont(new Font("宋体", Font.PLAIN, 16));
 		showNumTextField.setColumns(10);
-		showNumTextField.setBounds(314, 20, 105, 41);
+		showNumTextField.setBounds(351, 19, 105, 41);
 		panel.add(showNumTextField);
 
 		panel_1.setBorder(new TitledBorder(null, "\u64CD\u4F5C",
@@ -145,6 +147,19 @@ public class Meter_NoEncrypt extends JDialog {
 
 		final ReadHalf readHalf = new ReadHalf(showNumTextField,
 				MainWindow.out, MainWindow.in, MainWindow.serialPort);
+		clearBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				showAddrTextField.setText("");
+				showNumTextField.setText("");
+				addrTextField.setText("");
+				firstNumTextField.setText("");
+				readNumTextField.setText("");
+			}
+		});
+		clearBtn.setFont(new Font("宋体", Font.PLAIN, 12));
+		clearBtn.setBounds(479, 28, 93, 23);
+		
+		panel.add(clearBtn);
 		readHalfBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 
@@ -173,6 +188,7 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(writeAddrBtn);
 
 		addrTextField = new JTextField();
+		addrTextField.setToolTipText("高～～～～～低");
 		addrTextField.setFont(new Font("宋体", Font.PLAIN, 12));
 		addrTextField.setColumns(10);
 		addrTextField.setBounds(185, 151, 218, 21);
@@ -212,6 +228,7 @@ public class Meter_NoEncrypt extends JDialog {
 		toNationalBtn.setFont(new Font("宋体", Font.PLAIN, 12));
 		toNationalBtn.setBounds(46, 260, 93, 23);
 		panel_1.add(toNationalBtn);
+		toSunBtn.setEnabled(false);
 
 		toSunBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -222,6 +239,7 @@ public class Meter_NoEncrypt extends JDialog {
 		toSunBtn.setFont(new Font("宋体", Font.PLAIN, 12));
 		toSunBtn.setBounds(185, 260, 93, 23);
 		panel_1.add(toSunBtn);
+		badGayBtn.setEnabled(false);
 		badGayBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				writeBad();
@@ -231,6 +249,7 @@ public class Meter_NoEncrypt extends JDialog {
 		badGayBtn.setFont(new Font("宋体", Font.PLAIN, 12));
 		badGayBtn.setBounds(324, 315, 93, 23);
 		panel_1.add(badGayBtn);
+		goodManBtn.setEnabled(false);
 		goodManBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				writeGood();
@@ -262,9 +281,19 @@ public class Meter_NoEncrypt extends JDialog {
 				if (nationalCheckBox.isSelected()) {
 					writeOutBtn.setEnabled(true);
 					writeIAPBtn.setEnabled(true);
+					readHalfBtn.setEnabled(false);
+					goodManBtn.setEnabled(true);
+					badGayBtn.setEnabled(true);
+					toNationalBtn.setEnabled(false);
+					toSunBtn.setEnabled(true);
 				} else {
 					writeOutBtn.setEnabled(false);
 					writeIAPBtn.setEnabled(false);
+					readHalfBtn.setEnabled(true);
+					goodManBtn.setEnabled(false);
+					badGayBtn.setEnabled(false);
+					toNationalBtn.setEnabled(true);
+					toSunBtn.setEnabled(false);
 				}
 			}
 		});
@@ -301,8 +330,8 @@ public class Meter_NoEncrypt extends JDialog {
 			command[2] = (byte) 0xFE;
 			command[3] = (byte) 0xFE;
 			
-			command[4] = 0x68;
-			command[5] = 0x10;
+			command[4] = (byte)0x68;
+			command[5] = (byte)0x10;
 			//addr
 			command[6] = (byte) 0xAA;
 			command[7] = (byte) 0xAA;
@@ -322,9 +351,9 @@ public class Meter_NoEncrypt extends JDialog {
 			command[17] = (byte) 0x01;
 			command[18] = 0x00;
 			for(int i = 4;i < 18;i++){
-				command[18] ^= command[i];
+				command[18] += command[i];
 			}
-			command[19] = 0x16;
+			command[19] = (byte)0x16;
 			
 			try {
 				
@@ -355,7 +384,7 @@ public class Meter_NoEncrypt extends JDialog {
 							if(pre0.length() == 1){
 								pre0 = "0"+pre0;
 							}
-							System.out.println(pre0);
+//							System.out.println(pre0);
 							addr = addr + pre0 +" ";
 						}
 						showAddrTextField.setText(addr);
@@ -463,28 +492,36 @@ public class Meter_NoEncrypt extends JDialog {
 						}
 					}
 				}
-				command[6] = (byte) Integer.parseInt(addrs[0],16);
-				command[7] = (byte) Integer.parseInt(addrs[1],16);
-				command[8] = (byte) Integer.parseInt(addrs[2],16);
+//				command[6] = (byte) Integer.parseInt(addrs[0],16);
+//				command[7] = (byte) Integer.parseInt(addrs[1],16);
+//				command[8] = (byte) Integer.parseInt(addrs[2],16);
+//				command[9] = (byte) Integer.parseInt(addrs[3],16);
+//				command[10] = (byte) Integer.parseInt(addrs[4],16);
+//				command[11] = (byte) Integer.parseInt(addrs[5],16);
+//				command[12] = (byte) Integer.parseInt(addrs[6],16);
+				
+				command[12] = (byte) Integer.parseInt(addrs[0],16);
+				command[11] = (byte) Integer.parseInt(addrs[1],16);
+				command[10] = (byte) Integer.parseInt(addrs[2],16);
 				command[9] = (byte) Integer.parseInt(addrs[3],16);
-				command[10] = (byte) Integer.parseInt(addrs[4],16);
-				command[11] = (byte) Integer.parseInt(addrs[5],16);
-				command[12] = (byte) Integer.parseInt(addrs[6],16);
+				command[8] = (byte) Integer.parseInt(addrs[4],16);
+				command[7] = (byte) Integer.parseInt(addrs[5],16);
+				command[6] = (byte) Integer.parseInt(addrs[6],16);
 			}
 			
 			//control
-			command[13] = (byte) 0x03;
+			command[13] = (byte) 0x01;
 			//length
 			command[14] = (byte) 0x03;
 			//data
-			command[15] = (byte) 0x0A;
-			command[16] = (byte) 0x81;
+			command[15] = (byte) 0x1F;
+			command[16] = (byte) 0x90;
 			//serial 
 			command[17] = (byte) 0x01;
 			
 			command[18] = 0x00;
 			for(int i = 4;i < 18;i++){
-				command[18] ^= command[i];
+				command[18] += command[i];
 			}
 			command[19] = 0x16;
 			
@@ -661,18 +698,26 @@ public class Meter_NoEncrypt extends JDialog {
 						}
 					}
 				}
-				command[18] = (byte) Integer.parseInt(addrs[0],16);
-				command[19] = (byte) Integer.parseInt(addrs[1],16);
-				command[20] = (byte) Integer.parseInt(addrs[2],16);
+//				command[18] = (byte) Integer.parseInt(addrs[0],16);
+//				command[19] = (byte) Integer.parseInt(addrs[1],16);
+//				command[20] = (byte) Integer.parseInt(addrs[2],16);
+//				command[21] = (byte) Integer.parseInt(addrs[3],16);
+//				command[22] = (byte) Integer.parseInt(addrs[4],16);
+//				command[23] = (byte) Integer.parseInt(addrs[5],16);
+//				command[24] = (byte) Integer.parseInt(addrs[6],16);
+//				
+				command[24] = (byte) Integer.parseInt(addrs[0],16);
+				command[23] = (byte) Integer.parseInt(addrs[1],16);
+				command[22] = (byte) Integer.parseInt(addrs[2],16);
 				command[21] = (byte) Integer.parseInt(addrs[3],16);
-				command[22] = (byte) Integer.parseInt(addrs[4],16);
-				command[23] = (byte) Integer.parseInt(addrs[5],16);
-				command[24] = (byte) Integer.parseInt(addrs[6],16);
+				command[20] = (byte) Integer.parseInt(addrs[4],16);
+				command[19] = (byte) Integer.parseInt(addrs[5],16);
+				command[18] = (byte) Integer.parseInt(addrs[6],16);
 			}
 			
 			command[25] = 0x00;
 			for(int i = 4;i < 25;i++){
-				command[25] ^= command[i];
+				command[25] += command[i];
 			}
 			command[26] = 0x16;
 			
@@ -706,7 +751,7 @@ public class Meter_NoEncrypt extends JDialog {
 							if(pre0.length() == 1){
 								pre0 = "0"+pre0;
 							}
-							System.out.println(pre0);
+//							System.out.println(pre0);
 							addr = addr + pre0 +" ";
 						}
 						showAddrTextField.setText(addr);
@@ -840,18 +885,19 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 			
 			
-			command[18] = (byte) 0x01;
-			command[19] = (byte) 0x01;
+			command[18] = (byte) 0x00;  //.00   decimal
+			
 			String qb = firstStr.substring(0, 2);
 			String sg = firstStr.substring(2, 4);
-
-			command[20] = (byte) Integer.parseInt(qb, 16);
-			command[21] = (byte) Integer.parseInt(sg, 16);
+			
+			command[19] = (byte) Integer.parseInt(sg, 16);  //sg
+			command[20] = (byte) Integer.parseInt(qb, 16);  //qb
+			command[21] = (byte) 0x00;  //w
 			command[22] = (byte) 0x2C;
 			
 			command[23] = 0x00;
 			for(int i = 4;i < 23;i++){
-				command[23] ^= command[i];
+				command[23] += command[i];
 			}
 			command[24] = 0x16;
 			
@@ -1182,7 +1228,7 @@ public class Meter_NoEncrypt extends JDialog {
 			
 			command[18] = 0x00;
 			for(int i = 4;i < 18;i++){
-				command[18] ^= command[i];
+				command[18] += command[i];
 			}
 			command[19] = 0x16;
 			
@@ -1260,7 +1306,7 @@ public class Meter_NoEncrypt extends JDialog {
 		
 		command[18] = 0x00;
 		for(int i = 4;i < 18;i++){
-			command[18] ^= command[i];
+			command[18] += command[i];
 		}
 		command[19] = 0x16;
 		
@@ -1330,7 +1376,7 @@ public class Meter_NoEncrypt extends JDialog {
 		
 		command[18] = 0x00;
 		for(int i = 4;i < 18;i++){
-			command[18] ^= command[i];
+			command[18] += command[i];
 		}
 		command[19] = 0x16;
 		
@@ -1400,7 +1446,7 @@ public class Meter_NoEncrypt extends JDialog {
 		
 		command[18] = 0x00;
 		for(int i = 4;i < 18;i++){
-			command[18] ^= command[i];
+			command[18] += command[i];
 		}
 		command[19] = 0x16;
 		
@@ -1470,7 +1516,7 @@ public class Meter_NoEncrypt extends JDialog {
 		
 		command[18] = 0x00;
 		for(int i = 4;i < 18;i++){
-			command[18] ^= command[i];
+			command[18] += command[i];
 		}
 		command[19] = 0x16;
 		
