@@ -61,6 +61,9 @@ public class Meter_NoEncrypt extends JDialog {
 	public static int isD = 0;
 	public static int isB = 0;
 	
+
+	ReadHalf readHalf = null;
+	
 	static byte[] key = new byte[8];
 	private final JButton writeIAPBtn = new JButton("IAP");
 	private final JButton clearBtn = new JButton("清空");
@@ -145,8 +148,6 @@ public class Meter_NoEncrypt extends JDialog {
 		readNumBtn.setBounds(46, 91, 93, 23);
 		panel_1.add(readNumBtn);
 
-		final ReadHalf readHalf = new ReadHalf(showNumTextField,
-				MainWindow.out, MainWindow.in, MainWindow.serialPort);
 		clearBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				showAddrTextField.setText("");
@@ -162,8 +163,17 @@ public class Meter_NoEncrypt extends JDialog {
 		panel.add(clearBtn);
 		readHalfBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-
+				
 				if (readHalfBtn.getText().equalsIgnoreCase("读半位")) {
+					
+					if(readHalf == null){
+						readHalf = new ReadHalf(showNumTextField,
+								MainWindow.out, MainWindow.in, MainWindow.serialPort);
+					}else{
+						readHalf.cancel(true);
+						readHalf = new ReadHalf(showNumTextField,
+								MainWindow.out, MainWindow.in, MainWindow.serialPort);
+					}
 					readHalfBtn.setText("停止");
 					readHalf.execute();
 				} else {
