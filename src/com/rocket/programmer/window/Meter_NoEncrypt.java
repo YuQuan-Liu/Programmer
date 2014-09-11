@@ -14,6 +14,7 @@ import javax.swing.JCheckBox;
 
 import com.rocket.util.Property;
 import com.rocket.serial.task.ReadHalf;
+import com.rocket.serial.task.ReadMeter;
 
 import java.awt.Dialog.ModalityType;
 import java.awt.Font;
@@ -63,10 +64,12 @@ public class Meter_NoEncrypt extends JDialog {
 	
 
 	ReadHalf readHalf = null;
+	ReadMeter readMeter = null;
 	
 	static byte[] key = new byte[8];
 	private final JButton writeIAPBtn = new JButton("IAP");
 	private final JButton clearBtn = new JButton("清空");
+	private JButton readMeterBtn;
 	/**
 	 * Launch the application.
 	 */
@@ -285,6 +288,31 @@ public class Meter_NoEncrypt extends JDialog {
 		writeIAPBtn.setBounds(185, 315, 93, 23);
 		
 		panel_1.add(writeIAPBtn);
+		
+		readMeterBtn = new JButton("读表");
+		readMeterBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (readMeterBtn.getText().equalsIgnoreCase("读表")) {
+					
+					if(readHalf == null){
+						readMeter = new ReadMeter(showNumTextField,
+								MainWindow.out, MainWindow.in, MainWindow.serialPort);
+					}else{
+						readMeter.cancel(true);
+						readMeter = new ReadMeter(showNumTextField,
+								MainWindow.out, MainWindow.in, MainWindow.serialPort);
+					}
+					readMeterBtn.setText("停止");
+					readMeter.execute();
+				} else {
+					readMeterBtn.setText("读表");
+					readMeter.cancel(true);
+				}
+			}
+		});
+		readMeterBtn.setFont(new Font("宋体", Font.PLAIN, 12));
+		readMeterBtn.setBounds(324, 32, 93, 23);
+		panel_1.add(readMeterBtn);
 
 		nationalCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
@@ -314,6 +342,7 @@ public class Meter_NoEncrypt extends JDialog {
 		badGayBtn.setVisible(false);
 		goodManBtn.setVisible(false);
 		readHalfBtn.setVisible(false);
+		readMeterBtn.setVisible(false);
 
 		if (Property.getStringValue("GOOD") != null
 				&& Property.getStringValue("GOOD").equalsIgnoreCase("good")) {
@@ -325,6 +354,7 @@ public class Meter_NoEncrypt extends JDialog {
 		if (Property.getStringValue("HALF") != null
 				&& Property.getStringValue("HALF").equalsIgnoreCase("half")) {
 			readHalfBtn.setVisible(true);
+			readMeterBtn.setVisible(true);
 
 		}
 	}
@@ -1563,5 +1593,4 @@ public class Meter_NoEncrypt extends JDialog {
 			e.printStackTrace();
 		}
 	}
-	
 }
