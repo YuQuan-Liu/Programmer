@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 
 import com.rocket.util.Property;
+import com.rocket.util.StringPad;
 import com.rocket.serial.task.ReadHalf;
 import com.rocket.serial.task.ReadMeter;
 
@@ -479,7 +480,7 @@ public class Meter_NoEncrypt extends JDialog {
 				}
 				if(re[9] == 0){
 					showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-					showNumTextField.setText(Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[7]&0xFF).toUpperCase());
+					showNumTextField.setText(StringPad.leftPad(Integer.toHexString(re[6]&0xFF).toUpperCase(),2)+ " " +StringPad.leftPad(Integer.toHexString(re[7]&0xFF).toUpperCase(),2));
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -487,7 +488,8 @@ public class Meter_NoEncrypt extends JDialog {
 			
 		}
 	}
-
+	
+	
 	public void readNum() {
 		if (nationalCheckBox.isSelected()) {
 			// national
@@ -660,18 +662,18 @@ public class Meter_NoEncrypt extends JDialog {
 					
 					if(addr.equals("")){
 						showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
-						showNumTextField.setText(Integer.toHexString(
-								re[6] & 0xFF).toUpperCase()
+						showNumTextField.setText(StringPad.leftPad(Integer.toHexString(
+								re[6] & 0xFF).toUpperCase(),2)
 								+ " "
-								+ Integer.toHexString(re[7] & 0xFF)
-										.toUpperCase());
+								+ StringPad.leftPad(Integer.toHexString(re[7] & 0xFF)
+										.toUpperCase(),2));
 					}else{
 						showAddrTextField.setText(String.valueOf(re[4] & 0xFF));
-						showNumTextField.setText(Integer.toHexString(
-								re[6] & 0xFF).toUpperCase()
+						showNumTextField.setText(StringPad.leftPad(Integer.toHexString(
+								re[6] & 0xFF).toUpperCase(),2)
 								+ " "
-								+ Integer.toHexString(re[7] & 0xFF)
-										.toUpperCase());
+								+ StringPad.leftPad(Integer.toHexString(re[7] & 0xFF)
+										.toUpperCase(),2));
 					}
 					
 				}
@@ -1056,11 +1058,11 @@ public class Meter_NoEncrypt extends JDialog {
 				}
 				if (re[9] == 0) {
 					// showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-					showNumTextField.setText(Integer.toHexString(
-							re[6] & 0xFF).toUpperCase()
+					showNumTextField.setText(StringPad.leftPad(Integer.toHexString(
+							re[6] & 0xFF).toUpperCase(),2)
 							+ " "
-							+ Integer.toHexString(re[7] & 0xFF)
-									.toUpperCase());
+							+ StringPad.leftPad(Integer.toHexString(re[7] & 0xFF)
+									.toUpperCase(),2));
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();

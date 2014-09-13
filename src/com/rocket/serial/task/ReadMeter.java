@@ -10,6 +10,7 @@ import javax.swing.SwingWorker;
 
 import com.rocket.programmer.window.MainWindow;
 import com.rocket.programmer.window.Meter_NoEncrypt;
+import com.rocket.util.StringPad;
 
 
 
@@ -91,11 +92,11 @@ public class ReadMeter extends SwingWorker<Void, Void> {
 				//showAddrTextField.setText(String.valueOf(re[5]&0xFF));
 //				showNumTextField.setText(Integer.toHexString(re[7]&0xFF).toUpperCase() + " "+Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[5]&0xFF).toUpperCase());
 //				showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
-				showNumTextField.setText(Integer.toHexString(
-						re[6] & 0xFF).toUpperCase()
+				showNumTextField.setText(StringPad.leftPad(Integer.toHexString(
+						re[6] & 0xFF).toUpperCase(),2)
 						+ " "
-						+ Integer.toHexString(re[7] & 0xFF)
-								.toUpperCase());
+						+ StringPad.leftPad(Integer.toHexString(re[7] & 0xFF)
+								.toUpperCase(),2));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();

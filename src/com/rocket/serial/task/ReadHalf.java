@@ -10,6 +10,7 @@ import javax.swing.SwingWorker;
 
 import com.rocket.programmer.window.MainWindow;
 import com.rocket.programmer.window.Meter_NoEncrypt;
+import com.rocket.util.StringPad;
 
 
 
@@ -89,7 +90,7 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 			}
 			if(re[9] == 0){
 				//showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-				showNumTextField.setText(Integer.toHexString(re[7]&0xFF).toUpperCase() + " "+Integer.toHexString(re[6]&0xFF).toUpperCase() + " " +Integer.toHexString(re[5]&0xFF).toUpperCase());
+				showNumTextField.setText(StringPad.leftPad(Integer.toHexString(re[7]&0xFF).toUpperCase(),2) + " "+StringPad.leftPad(Integer.toHexString(re[6]&0xFF).toUpperCase(),2) + " " +StringPad.leftPad(Integer.toHexString(re[5]&0xFF).toUpperCase(),2));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();

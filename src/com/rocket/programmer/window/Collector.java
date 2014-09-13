@@ -286,19 +286,19 @@ public class Collector extends JDialog {
 		String addrStr = "";
 		try {
 			addrStr = addrTextField.getText();
-			if(addrStr.length() != 4){
-				JOptionPane.showMessageDialog(panel_1, "请输入4位数字！");
+			if(addrStr.length() != 5){
+				JOptionPane.showMessageDialog(panel_1, "请输入5位数字！");
 				return;
 			}
 			addr = Integer.parseInt(addrStr);
-			if(addr >= 0 && addr <= 9999){
+			if(addr >= 0 && addr <= 65535){
 				
 			}else{
-				JOptionPane.showMessageDialog(panel_1, "请填入>= 0 ,<=9999的数字");
+				JOptionPane.showMessageDialog(panel_1, "请填入>= 0 ,<=65535的数字");
 				return;
 			}
 		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(panel_1, "请填入>= 0 ,<=9999的数字");
+			JOptionPane.showMessageDialog(panel_1, "请填入>= 0 ,<=65535的数字");
 			e.printStackTrace();
 			return;
 		}
@@ -310,8 +310,12 @@ public class Collector extends JDialog {
 		command[3] = 0x01;
 		command[4] = (byte) 0xFF;
 		
-		String haddr = addrStr.substring(0, 2);
-		String laddr = addrStr.substring(2, 4);
+		
+		String straddr = Integer.toHexString(addr);
+		
+		String haddr = straddr.substring(0, 2);
+		String laddr = straddr.substring(2, 4);
+		
 		
 		command[5] = (byte) Integer.parseInt(haddr, 16);
 		command[6] = (byte) Integer.parseInt(laddr, 16);
