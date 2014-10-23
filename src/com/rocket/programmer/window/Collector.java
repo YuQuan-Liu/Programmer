@@ -313,6 +313,11 @@ public class Collector extends JDialog {
 		
 		String straddr = Integer.toHexString(addr);
 		
+		while(straddr.length() < 4){
+			
+			straddr = "0" + straddr;
+		}
+		
 		String haddr = straddr.substring(0, 2);
 		String laddr = straddr.substring(2, 4);
 		
