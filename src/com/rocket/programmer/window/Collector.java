@@ -128,6 +128,11 @@ public class Collector extends JDialog {
 		writeAddrBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				writeAddr();
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				readAddr();
 			}
 		});
