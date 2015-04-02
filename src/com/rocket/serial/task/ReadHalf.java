@@ -90,7 +90,7 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 			}
 			if(re[9] == 0){
 				//showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-				showNumTextField.setText(StringPad.leftPad(Integer.toHexString(re[7]&0xFF).toUpperCase(),2) + " "+StringPad.leftPad(Integer.toHexString(re[6]&0xFF).toUpperCase(),2) + " " +StringPad.leftPad(Integer.toHexString(re[5]&0xFF).toUpperCase(),2));
+				showNumTextField.setText(StringPad.leftPad(Integer.toHexString(re[7]&0xFF).toUpperCase(),2) + " "+StringPad.leftPad(Integer.toHexString(re[6]&0xFF).toUpperCase(),2) + " " +StringPad.leftPad(Integer.toHexString(re[5]&0xFF).toUpperCase(),2)+ " " +StringPad.leftPad(Integer.toHexString(re[4]&0xFF).toUpperCase(),2));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();

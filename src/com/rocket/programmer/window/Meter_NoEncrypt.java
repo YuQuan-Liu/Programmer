@@ -295,7 +295,7 @@ public class Meter_NoEncrypt extends JDialog {
 			public void actionPerformed(ActionEvent arg0) {
 				if (readMeterBtn.getText().equalsIgnoreCase("读表")) {
 					
-					if(readHalf == null){
+					if(readMeter == null){
 						readMeter = new ReadMeter(showNumTextField,
 								MainWindow.out, MainWindow.in, MainWindow.serialPort);
 					}else{
