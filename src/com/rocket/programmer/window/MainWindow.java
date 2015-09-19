@@ -133,7 +133,6 @@ public class MainWindow {
 		button_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				
 				if(serialPort != null){
 					try {
 						serialPort.setSerialPortParams(Property.getIntValue("ConcentratorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));

@@ -32,7 +32,7 @@ public class Property {
 	}
 	
 	public static void main(String[] a){
-		System.out.println(Property.getIntValue("Rocket"));
+		System.out.println(System.getProperty("user.dir"));
 	}
 	
 }

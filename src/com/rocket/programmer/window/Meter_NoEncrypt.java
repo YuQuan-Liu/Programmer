@@ -48,7 +48,7 @@ public class Meter_NoEncrypt extends JDialog {
 	final JButton writeFirstNumBtn = new JButton("写初值");
 	final JButton writeOutBtn = new JButton("出厂");
 	final JButton toNationalBtn = new JButton("转为国家");
-	final JButton toSunBtn = new JButton("转为HD");
+	final JButton toSunBtn = new JButton("转为自主");
 	final JButton badGayBtn = new JButton("BAD MAN");
 	final JButton goodManBtn = new JButton("GOOD MAN");
 
@@ -345,7 +345,7 @@ public class Meter_NoEncrypt extends JDialog {
 		badGayBtn.setVisible(false);
 		goodManBtn.setVisible(false);
 		readHalfBtn.setVisible(false);
-		readMeterBtn.setVisible(false);
+		readMeterBtn.setVisible(true);
 
 		if (Property.getStringValue("GOOD") != null
 				&& Property.getStringValue("GOOD").equalsIgnoreCase("good")) {
@@ -357,7 +357,7 @@ public class Meter_NoEncrypt extends JDialog {
 		if (Property.getStringValue("HALF") != null
 				&& Property.getStringValue("HALF").equalsIgnoreCase("half")) {
 			readHalfBtn.setVisible(true);
-			readMeterBtn.setVisible(true);
+//			readMeterBtn.setVisible(true);
 
 		}
 	}
