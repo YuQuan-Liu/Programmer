@@ -27,18 +27,16 @@ public class ReadJZQAll extends SwingWorker<Void, Void>{
 	private JTextField txt_fileaddr; 
 	private OutputStream out;
 	private InputStream in; 
-	private SerialPort serialPort; 
-	private ReadJZQAll readJZQAll;
+	private SerialPort serialPort;
 	
 
 	public ReadJZQAll(JTextField txt_fileaddr, OutputStream out,
-			InputStream in, SerialPort serialPort, ReadJZQAll readJZQAll) {
+			InputStream in, SerialPort serialPort) {
 
 		this.txt_fileaddr = txt_fileaddr;
 		this.in = in;
 		this.out = out;
 		this.serialPort = serialPort;
-		this.readJZQAll = readJZQAll;
 	}
 
 	@Override
@@ -130,7 +128,7 @@ public class ReadJZQAll extends SwingWorker<Void, Void>{
 			e1.printStackTrace();
 		}
 		serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
-		readJZQAll = null;
+		Concentrator.readJZQAll = null;
 		return null;
 	}
 

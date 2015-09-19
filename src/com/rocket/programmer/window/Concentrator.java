@@ -52,7 +52,7 @@ public class Concentrator extends JDialog {
 	public static boolean data_done = false;
 	private JTextField txt_fileaddr;
 	
-	ReadJZQAll readJZQAll = null;
+	public static ReadJZQAll readJZQAll = null;
 	
 	/**
 	 * Launch the application.
@@ -349,7 +349,7 @@ public class Concentrator extends JDialog {
 	protected void readall() {
 		
 		if(readJZQAll == null){
-			readJZQAll = new ReadJZQAll(txt_fileaddr,MainWindow.out,MainWindow.in,MainWindow.serialPort,readJZQAll);
+			readJZQAll = new ReadJZQAll(txt_fileaddr,MainWindow.out,MainWindow.in,MainWindow.serialPort);
 			readJZQAll.execute();
 		}else{
 			JOptionPane.showMessageDialog(panel_1, "正在抄表...");
