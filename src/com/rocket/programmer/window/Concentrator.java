@@ -250,16 +250,6 @@ public class Concentrator extends JDialog {
 		btn_readall.setBounds(173, 157, 93, 23);
 		panel_3.add(btn_readall);
 		
-		JButton btn_open = new JButton("开阀");
-		btn_open.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_open.setBounds(320, 157, 93, 23);
-		panel_3.add(btn_open);
-		
-		JButton btn_close = new JButton("关阀");
-		btn_close.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_close.setBounds(467, 157, 93, 23);
-		panel_3.add(btn_close);
-		
 		JButton btn_mbus = new JButton("表MBUS");
 		btn_mbus.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_mbus.addActionListener(new ActionListener() {
