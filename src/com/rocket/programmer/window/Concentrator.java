@@ -97,7 +97,7 @@ public class Concentrator extends JDialog {
 				//cjqaddr
 				String cjqaddr = txt_cjqaddr.getText();
 				
-				if(cjqaddr.length() != 12 || !cjqaddr.matches("[0-9]*")){
+				if(cjqaddr.length() != 12 || !cjqaddr.matches("[0-9fF]*")){
 					JOptionPane.showMessageDialog(panel_1, "采集器地址错误！");
 					return;
 				}
@@ -164,7 +164,7 @@ public class Concentrator extends JDialog {
 					return;
 				}
 				
-				if(cjqaddr.length() != 12 || !cjqaddr.matches("[0-9]*")){
+				if(cjqaddr.length() != 12 || !cjqaddr.matches("[0-9fF]*")){
 					JOptionPane.showMessageDialog(panel_1, "采集器地址错误！");
 					return;
 				}
