@@ -348,6 +348,7 @@ public class Meter_NoEncrypt extends JDialog {
 					
 					btn_close.setEnabled(false);
 					btn_open.setEnabled(false);
+					btn_testValve.setEnabled(false);
 				}
 			}
 		});
