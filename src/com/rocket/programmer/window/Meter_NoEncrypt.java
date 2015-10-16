@@ -74,6 +74,9 @@ public class Meter_NoEncrypt extends JDialog {
 	private final JButton writeIAPBtn = new JButton("IAP");
 	private final JButton clearBtn = new JButton("清空");
 	private JButton readMeterBtn;
+	private JTextField txtValveTimeout;
+	private final JButton btnReadValveTimeout = new JButton("读阀门超时");
+	private final JButton btnWriteValveTimeout = new JButton("写阀门超时");
 	/**
 	 * Launch the application.
 	 */
@@ -328,6 +331,34 @@ public class Meter_NoEncrypt extends JDialog {
 		btn_testValve.setBounds(324, 370, 93, 23);
 		
 		panel_1.add(btn_testValve);
+		
+		btnWriteValveTimeout.setEnabled(false);
+		btnWriteValveTimeout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int timeout = Integer.parseInt(txtValveTimeout.getText());
+				writeValveTimeout(timeout);
+			}
+		});
+		btnWriteValveTimeout.setFont(new Font("宋体", Font.PLAIN, 12));
+		btnWriteValveTimeout.setBounds(46, 418, 93, 23);
+		panel_1.add(btnWriteValveTimeout);
+		
+		txtValveTimeout = new JTextField();
+		txtValveTimeout.setToolTipText("超时时间多少s");
+		txtValveTimeout.setFont(new Font("宋体", Font.PLAIN, 12));
+		txtValveTimeout.setColumns(10);
+		txtValveTimeout.setBounds(184, 419, 218, 21);
+		panel_1.add(txtValveTimeout);
+		btnReadValveTimeout.setEnabled(false);
+		btnReadValveTimeout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				readValveTimeout();
+			}
+		});
+		btnReadValveTimeout.setFont(new Font("宋体", Font.PLAIN, 12));
+		btnReadValveTimeout.setBounds(436, 418, 93, 23);
+		
+		panel_1.add(btnReadValveTimeout);
 
 		nationalCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
@@ -340,6 +371,8 @@ public class Meter_NoEncrypt extends JDialog {
 					btn_close.setEnabled(true);
 					btn_open.setEnabled(true);
 					btn_testValve.setEnabled(true);
+					btnWriteValveTimeout.setEnabled(true);
+					btnReadValveTimeout.setEnabled(true);
 				} else {
 					writeOutBtn.setEnabled(false);
 					writeIAPBtn.setEnabled(false);
@@ -349,6 +382,8 @@ public class Meter_NoEncrypt extends JDialog {
 					btn_close.setEnabled(false);
 					btn_open.setEnabled(false);
 					btn_testValve.setEnabled(false);
+					btnWriteValveTimeout.setEnabled(false);
+					btnReadValveTimeout.setEnabled(false);
 				}
 			}
 		});
@@ -378,6 +413,148 @@ public class Meter_NoEncrypt extends JDialog {
 //			readMeterBtn.setVisible(true);
 
 		}
+	}
+
+	protected void readValveTimeout() {
+		byte[] re = new byte[40];
+		byte[] command = new byte[40];
+		
+		command[0] = (byte) 0xFE;
+		command[1] = (byte) 0xFE;
+		command[2] = (byte) 0xFE;
+		command[3] = (byte) 0xFE;
+		
+		command[4] = 0x68;
+		command[5] = 0x10;
+		//addr
+		command[6] = (byte) 0xAA;
+		command[7] = (byte) 0xAA;
+		command[8] = (byte) 0xAA;
+		command[9] = (byte) 0xAA;
+		command[10] = (byte) 0xAA;
+		command[11] = (byte) 0xAA;
+		command[12] = (byte) 0xAA;
+		
+		//control
+		command[13] = (byte) 0x01;
+		//length
+		command[14] = (byte) 0x03;
+		//data
+		command[15] = (byte) 0x92;
+		command[16] = (byte) 0xA0;
+		//serial 
+		command[17] = (byte) 0x01;
+		
+		command[18] = 0x00;
+		for(int i = 4;i < 18;i++){
+			command[18] += command[i];
+		}
+		command[19] = 0x16;
+		
+		try {
+			
+//			MainWindow.serialPort.enableReceiveTimeout(2000);
+			MainWindow.serialPort.enableReceiveThreshold(1);
+			MainWindow.out.write(command, 0, 20);
+			
+			byte[] in = new byte[10];
+			countdata = 0;
+			countFE = 0;
+			isData = 0;
+			dataLen = 0;
+			dataFinish = 0;
+			while(MainWindow.in.read(in) > 0){
+				
+				readBytes(in,re);
+				if(dataFinish == 1){
+					break;
+				}
+			}
+			//deal the data re[]
+			
+			if(checkSum(re)){
+				
+				if(re[11] == (byte)0x92 && re[12] == (byte)0xA0){
+					byte valvetimeout = re[14];
+					
+					JOptionPane.showMessageDialog(panel_1, valvetimeout+"s");
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	protected void writeValveTimeout(int timeout) {
+		byte[] re = new byte[40];
+		byte[] command = new byte[40];
+		
+		command[0] = (byte) 0xFE;
+		command[1] = (byte) 0xFE;
+		command[2] = (byte) 0xFE;
+		command[3] = (byte) 0xFE;
+		
+		command[4] = (byte)0x68;
+		command[5] = (byte)0x10;
+		//addr
+		command[6] = (byte) 0xAA;
+		command[7] = (byte) 0xAA;
+		command[8] = (byte) 0xAA;
+		command[9] = (byte) 0xAA;
+		command[10] = (byte) 0xAA;
+		command[11] = (byte) 0xAA;
+		command[12] = (byte) 0xAA;
+		//control
+		command[13] = (byte) 0x04;
+		//length
+		command[14] = (byte) 0x04;
+		//data
+		command[15] = (byte) 0x92;
+		command[16] = (byte) 0xA0;
+		//serial 
+		command[17] = (byte) 0x01;
+		//open valve
+		command[18] = (byte)timeout;
+		command[19] = 0x00;
+		for(int i = 4;i < 19;i++){
+			command[19] += command[i];
+		}
+		command[20] = (byte)0x16;
+		
+		try {
+			
+//			MainWindow.serialPort.enableReceiveTimeout(2000);
+			MainWindow.serialPort.enableReceiveThreshold(1);
+			MainWindow.out.write(command, 0, 21);
+			
+			byte[] in = new byte[10];
+			countdata = 0;
+			countFE = 0;
+			isData = 0;
+			dataLen = 0;
+			dataFinish = 0;
+			while(MainWindow.in.read(in) > 0){
+				
+				readBytes(in,re);
+				if(dataFinish == 1){
+					break;
+				}
+			}
+			//deal the data re[]
+			
+			if(checkSum(re)){
+				if(re[11] == (byte)0x92 && re[12] == (byte)0xA0){
+					byte valvetimeout = re[14];
+					JOptionPane.showMessageDialog(panel_1, valvetimeout+"s");
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	protected void closeValve() {
