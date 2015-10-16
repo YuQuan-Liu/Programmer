@@ -147,7 +147,7 @@ public class Concentrator extends JDialog {
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
 		panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\u8868", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(35, 187, 643, 225);
+		panel_3.setBounds(35, 187, 643, 271);
 		panel_1.add(panel_3);
 		
 		JButton btn_meteradd = new JButton("添加");
@@ -237,7 +237,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_readsingle.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_readsingle.setBounds(26, 157, 93, 23);
+		btn_readsingle.setBounds(26, 204, 93, 23);
 		panel_3.add(btn_readsingle);
 		
 		JButton btn_readall = new JButton("抄全部表");
@@ -247,7 +247,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_readall.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_readall.setBounds(173, 157, 93, 23);
+		btn_readall.setBounds(173, 204, 93, 23);
 		panel_3.add(btn_readall);
 		
 		JButton btn_mbus = new JButton("表MBUS");
@@ -279,6 +279,36 @@ public class Concentrator extends JDialog {
 		});
 		btn_queryslave.setBounds(320, 112, 125, 23);
 		panel_3.add(btn_queryslave);
+		
+		JButton btn_test = new JButton("测试");
+		btn_test.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				modifytest((byte) 0xFF);
+			}
+		});
+		btn_test.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_test.setBounds(26, 159, 93, 23);
+		panel_3.add(btn_test);
+		
+		JButton btn_out = new JButton("出厂");
+		btn_out.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				modifytest((byte) 0x00);
+			}
+		});
+		btn_out.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_out.setBounds(173, 159, 93, 23);
+		panel_3.add(btn_out);
+		
+		JButton btn_querytest = new JButton("查询出厂");
+		btn_querytest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				readTest();
+			}
+		});
+		btn_querytest.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_querytest.setBounds(320, 159, 125, 23);
+		panel_3.add(btn_querytest);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser jfc = new JFileChooser();
@@ -336,6 +366,86 @@ public class Concentrator extends JDialog {
 	}
 	
 	
+	protected void modifytest(byte test) {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[1];
+		framedata[0]=test;
+		
+		Frame login = new Frame(1, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x0D, gprsaddr, framedata);
+		
+		try {
+//			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
+			MainWindow.serialPort.enableReceiveThreshold(1);
+			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
+			byte[] in = new byte[2];
+			byte[] deal = new byte[100];
+			
+			datacount = 0;
+			header = 0;
+			frame_len = 0;
+			data_len = 0;
+			data_done = false;
+			while(MainWindow.in.read(in) > 0){
+				readBytes(in, deal);
+				if(data_done){
+					break;
+				}
+			}
+			if(data_done){
+				readTest();
+			}
+//			System.out.println(StringUtil.byteArrayToHexStr(deal, datacount));
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+
+	private void readTest() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_QUERY, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x0D, gprsaddr, new byte[0]);
+		
+		
+		try {
+			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
+			MainWindow.serialPort.enableReceiveThreshold(1);
+			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
+			byte[] in = new byte[2];
+			byte[] deal = new byte[100];
+			
+			datacount = 0;
+			header = 0;
+			frame_len = 0;
+			data_len = 0;
+			data_done = false;
+			while(MainWindow.in.read(in) > 0){
+				readBytes(in, deal);
+				if(data_done){
+					break;
+				}
+			}
+			System.out.println(StringUtil.byteArrayToHexStr(deal, datacount));
+			if(data_done){
+				if(deal[15] == (byte)0x00){
+					JOptionPane.showMessageDialog(panel_1, "出厂");
+				}
+				if(deal[15] == (byte)0xFF){
+					JOptionPane.showMessageDialog(panel_1, "测试");
+				}
+			}
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+
 	protected void readall() {
 		
 		if(readJZQAll == null){
