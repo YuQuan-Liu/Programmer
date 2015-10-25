@@ -1494,7 +1494,7 @@ public class Meter_NoEncrypt extends JDialog {
 				countFE++;
 			} else {
 				if (in[0] == (byte) 0x68) {
-					if (countFE >= 3) {
+					if (countFE >= 2) {
 						isData = 1;
 						countFE = 0;
 						countdata = 0;
