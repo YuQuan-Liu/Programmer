@@ -339,6 +339,42 @@ public class Concentrator extends JDialog {
 		btn_queryDI.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_queryDI.setBounds(320, 201, 125, 23);
 		panel_3.add(btn_queryDI);
+		
+		JButton btn_Open = new JButton("开阀");
+		btn_Open.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//meteraddr
+				String meteraddr = txt_meteraddr.getText();
+				
+				if(meteraddr.length() != 14 || !meteraddr.matches("[0-9]*")){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
+					return;
+				}
+				
+				openValve(meteraddr);
+			}
+		});
+		btn_Open.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_Open.setBounds(26, 292, 93, 23);
+		panel_3.add(btn_Open);
+		
+		JButton btn_Close = new JButton("关阀");
+		btn_Close.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//meteraddr
+				String meteraddr = txt_meteraddr.getText();
+				
+				if(meteraddr.length() != 14 || !meteraddr.matches("[0-9]*")){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
+					return;
+				}
+				
+				closeValve(meteraddr);
+			}
+		});
+		btn_Close.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_Close.setBounds(173, 292, 93, 23);
+		panel_3.add(btn_Close);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser jfc = new JFileChooser();
@@ -395,9 +431,102 @@ public class Concentrator extends JDialog {
 		panel.add(label_2);
 	}
 	
+	protected void closeValve(String meteraddr) {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[10];
+		framedata[0] = 0x10;
+		//meteraddr
+		byte[] maddr = StringUtil.string2Byte(meteraddr);
+		for(int i = 0;i < 7;i++){
+			framedata[1+i] = maddr[6-i];
+		}
+		
+		framedata[8] = (byte) 0x00;
+		framedata[9] = (byte) 0x00;
+		
+		Frame login = new Frame(10, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONTROL, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x02, gprsaddr, framedata);
+		
+		
+		try {
+			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
+			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
+			MainWindow.serialPort.enableReceiveTimeout(20000);
+			byte[] in = new byte[2];
+			byte[] deal = new byte[256];
+			
+			datacount = 0;
+			header = 0;
+			frame_len = 0;
+			data_len = 0;
+			data_done = false;
+			while(MainWindow.in.read(in) > 0){
+				readBytes(in, deal);
+				if(data_done){
+					break;
+				}
+			}
+			if(data_done){
+				JOptionPane.showMessageDialog(panel_1, "阀关");
+			}
+			MainWindow.serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+
+	protected void openValve(String meteraddr) {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[10];
+		framedata[0] = 0x10;
+		//meteraddr
+		byte[] maddr = StringUtil.string2Byte(meteraddr);
+		for(int i = 0;i < 7;i++){
+			framedata[1+i] = maddr[6-i];
+		}
+		
+		framedata[8] = (byte) 0x00;
+		framedata[9] = (byte) 0x00;
+		
+		Frame login = new Frame(10, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONTROL, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x03, gprsaddr, framedata);
+		
+		
+		try {
+			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
+			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
+			MainWindow.serialPort.enableReceiveTimeout(20000);
+			byte[] in = new byte[2];
+			byte[] deal = new byte[256];
+			
+			datacount = 0;
+			header = 0;
+			frame_len = 0;
+			data_len = 0;
+			data_done = false;
+			while(MainWindow.in.read(in) > 0){
+				readBytes(in, deal);
+				if(data_done){
+					break;
+				}
+			}
+			if(data_done){
+				JOptionPane.showMessageDialog(panel_1, "阀开");
+			}
+			MainWindow.serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+
 	//seq~0xFF~DI0在前（默认）   seq~0xAA~DI1在前（千宝通）   
 	protected void modifyDISeq(byte seq) {
-		// TODO Auto-generated method stub
 		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
 		
 		byte[] framedata = new byte[1];
