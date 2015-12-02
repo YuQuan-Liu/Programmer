@@ -2,6 +2,7 @@ package com.rocket.programmer.window;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.HeadlessException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -53,6 +54,8 @@ public class Concentrator extends JDialog {
 	private JTextField txt_fileaddr;
 	
 	public static ReadJZQAll readJZQAll = null;
+	private JTextField txt_Port;
+	private JTextField txt_IP;
 	
 	/**
 	 * Launch the application.
@@ -75,12 +78,12 @@ public class Concentrator extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setTitle("集中器");
-		setBounds(100, 100, 818, 608);
+		setBounds(100, 100, 829, 681);
 		getContentPane().setLayout(null);
 		
 		
 		panel_1.setBorder(new TitledBorder(null, "\u64CD\u4F5C", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(10, 23, 792, 547);
+		panel_1.setBounds(10, 23, 803, 620);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -147,7 +150,7 @@ public class Concentrator extends JDialog {
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
 		panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\u8868", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(35, 187, 643, 350);
+		panel_3.setBounds(35, 187, 693, 423);
 		panel_1.add(panel_3);
 		
 		JButton btn_meteradd = new JButton("添加");
@@ -375,6 +378,53 @@ public class Concentrator extends JDialog {
 		btn_Close.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_Close.setBounds(173, 292, 93, 23);
 		panel_3.add(btn_Close);
+		
+		JLabel lblIp = new JLabel("IP：");
+		lblIp.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblIp.setFont(new Font("宋体", Font.PLAIN, 14));
+		lblIp.setBounds(301, 341, 46, 15);
+		panel_3.add(lblIp);
+		
+		txt_Port = new JTextField();
+		txt_Port.setToolTipText("");
+		txt_Port.setFont(new Font("宋体", Font.PLAIN, 14));
+		txt_Port.setColumns(10);
+		txt_Port.setBounds(585, 335, 86, 27);
+		panel_3.add(txt_Port);
+		
+		JLabel label_3 = new JLabel("端口：");
+		label_3.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_3.setFont(new Font("宋体", Font.PLAIN, 14));
+		label_3.setBounds(514, 341, 61, 15);
+		panel_3.add(label_3);
+		
+		txt_IP = new JTextField();
+		txt_IP.setToolTipText("");
+		txt_IP.setFont(new Font("宋体", Font.PLAIN, 14));
+		txt_IP.setColumns(10);
+		txt_IP.setBounds(356, 335, 150, 27);
+		panel_3.add(txt_IP);
+		
+		JButton btn_IP = new JButton("设置IP");
+		btn_IP.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				modifyIP();
+			}
+		});
+		btn_IP.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_IP.setBounds(26, 335, 93, 23);
+		panel_3.add(btn_IP);
+		
+		JButton btn_queryIP = new JButton("查看IP");
+		btn_queryIP.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				queryIP();
+			}
+		});
+		btn_queryIP.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_queryIP.setBounds(173, 337, 93, 23);
+		panel_3.add(btn_queryIP);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser jfc = new JFileChooser();
@@ -431,6 +481,122 @@ public class Concentrator extends JDialog {
 		panel.add(label_2);
 	}
 	
+	protected void modifyIP() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[6];
+		
+		String ip = txt_IP.getText();
+		String port = txt_Port.getText();
+		
+		String[] ips = ip.split("\\.");
+		
+		System.out.println(ip);
+		System.out.println(ips.length);
+		System.out.println(ips[0]);
+		if(ips.length != 4){
+			JOptionPane.showMessageDialog(panel_1, "IP地址错误！");
+			return;
+		}
+		
+		for(int i = 0;i < 4;i++){
+			try {
+				int ips_ = Integer.parseInt(ips[i]);
+				if(ips_ <=0 || ips_ >= 255){
+					JOptionPane.showMessageDialog(panel_1, "IP地址错误！");
+					return;
+				}
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(panel_1, "IP地址错误！");
+				return;
+			} 
+		}
+		
+		
+		int port_ = Integer.parseInt(port);
+		if(port_ <= 0 || port_ >=65535){
+			JOptionPane.showMessageDialog(panel_1, "端口错误！");
+			return;
+		}
+		
+		framedata[0] = (byte) Integer.parseInt(ips[3]);
+		framedata[1] = (byte) Integer.parseInt(ips[2]);
+		framedata[2] = (byte) Integer.parseInt(ips[1]);
+		framedata[3] = (byte) Integer.parseInt(ips[0]);
+		
+		framedata[4] = (byte) port_;
+		framedata[5] = (byte) (port_>>8);
+		
+		Frame login = new Frame(6, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x02, gprsaddr, framedata);
+		
+		
+		try {
+			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
+			MainWindow.serialPort.enableReceiveThreshold(1);
+			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
+			byte[] in = new byte[2];
+			byte[] deal = new byte[100];
+			
+			datacount = 0;
+			header = 0;
+			frame_len = 0;
+			data_len = 0;
+			data_done = false;
+			while(MainWindow.in.read(in) > 0){
+				readBytes(in, deal);
+				if(data_done){
+					break;
+				}
+			}
+			if(data_done){
+				queryIP();
+			}
+			System.out.println(StringUtil.byteArrayToHexStr(deal, datacount));
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	protected void queryIP() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_QUERY, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x02, gprsaddr, new byte[0]);
+		
+		try {
+			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
+			MainWindow.serialPort.enableReceiveThreshold(1);
+			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
+			byte[] in = new byte[2];
+			byte[] deal = new byte[100];
+			
+			datacount = 0;
+			header = 0;
+			frame_len = 0;
+			data_len = 0;
+			data_done = false;
+			while(MainWindow.in.read(in) > 0){
+				readBytes(in, deal);
+				if(data_done){
+					break;
+				}
+			}
+			if(data_done){
+				//get the ip&port 
+				txt_IP.setText((deal[18]&0xFF)+"."+(deal[17]&0xFF)+"."+(deal[16]&0xFF)+"."+(deal[15]&0xFF));
+				txt_Port.setText(""+Integer.parseInt(String.format("%02x", deal[20]&0xFF)+String.format("%02x", deal[19]&0xFF), 16));
+			}
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+
 	protected void closeValve(String meteraddr) {
 		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
 		
