@@ -489,7 +489,7 @@ public class Concentrator extends JDialog {
 		String ip = txt_IP.getText();
 		String port = txt_Port.getText();
 		
-		String[] ips = ip.split("\\.");
+		String[] ips = ip.split("[.]");   // ip.split("\\");
 		
 		System.out.println(ip);
 		System.out.println(ips.length);
