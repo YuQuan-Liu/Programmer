@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.awt.event.WindowAdapter;
@@ -23,16 +24,19 @@ import javax.swing.SwingConstants;
 import javax.swing.JComboBox;
 
 import com.rocket.serial.Serial;
+import com.rocket.serial.SerialReader;
+import com.rocket.serial.SerialWriter;
 import com.rocket.util.Property;
 
 public class MainWindow {
 
 	private JFrame frmRocketprogrammer;
-	
+	public static SerialPort serialPort = null;
 	public static InputStream in = null;
 	public static OutputStream out = null;
-	public static SerialPort serialPort = null;
 	
+	private Thread reader = null;
+	private Thread writer = null;
 	
 	/**
 	 * Launch the application.
@@ -67,6 +71,8 @@ public class MainWindow {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
 				if(serialPort != null){
+					reader.interrupt();
+					writer.interrupt();
 					serialPort.close();
 				}
 			}
@@ -83,10 +89,12 @@ public class MainWindow {
 				if(serialPort != null){
 					try {
 						serialPort.setSerialPortParams(Property.getIntValue("MeterBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
-						serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
-						serialPort.enableReceiveThreshold(1);
 						in = serialPort.getInputStream();
 						out = serialPort.getOutputStream();
+						reader = new Thread(new SerialReader(in));
+						writer = new Thread(new SerialWriter(out));
+						reader.start();
+						writer.start();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -110,10 +118,12 @@ public class MainWindow {
 				if(serialPort != null){
 					try {
 						serialPort.setSerialPortParams(Property.getIntValue("CollectorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
-						serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
-						serialPort.enableReceiveThreshold(1);
 						in = serialPort.getInputStream();
 						out = serialPort.getOutputStream();
+						reader = new Thread(new SerialReader(in));
+						writer = new Thread(new SerialWriter(out));
+						reader.start();
+						writer.start();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -136,10 +146,12 @@ public class MainWindow {
 				if(serialPort != null){
 					try {
 						serialPort.setSerialPortParams(Property.getIntValue("ConcentratorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
-						serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
-						serialPort.enableReceiveThreshold(1);
 						in = serialPort.getInputStream();
 						out = serialPort.getOutputStream();
+						reader = new Thread(new SerialReader(in));
+						writer = new Thread(new SerialWriter(out));
+						reader.start();
+						writer.start();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -168,6 +180,12 @@ public class MainWindow {
 		openBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(serialPort != null){
+					if(reader != null){
+						reader.interrupt();
+					}
+					if(writer != null){
+						writer.interrupt();
+					}
 					serialPort.close();
 					serialPort = null;
 					openBtn.setText("打开串口");
@@ -177,16 +195,9 @@ public class MainWindow {
 					driver.initialize();
 					try {
 						serialPort = (SerialPort) driver.getCommPort(comboBox.getSelectedItem().toString(), CommPortIdentifier.PORT_SERIAL);
-//						serialPort.setSerialPortParams(Property.getIntValue("BaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
-//						serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
-//						serialPort.enableReceiveThreshold(1);
-//						in = serialPort.getInputStream();
-//						out = serialPort.getOutputStream();
-						
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					
 				}
 			}
 		});

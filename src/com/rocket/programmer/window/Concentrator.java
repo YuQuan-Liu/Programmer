@@ -9,6 +9,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import java.awt.Dialog.ModalityType;
 import javax.swing.JLabel;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.UIManager;
 
@@ -36,6 +38,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import com.rocket.obj.Frame;
+import com.rocket.serial.SerialReader;
+import com.rocket.serial.SerialWriter;
 import com.rocket.serial.task.ReadJZQAll;
 import com.rocket.util.Property;
 import com.rocket.util.StringUtil;
@@ -461,7 +465,16 @@ public class Concentrator extends JDialog {
 		btn_jzqreadaddr.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				readJZQaddr();
+				new SwingWorker<Void, Void>() {
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readJZQaddr();
+						return null;
+					}
+				}.execute();
+				
+				
 			}
 		});
 		btn_jzqreadaddr.setBounds(165, 24, 99, 23);
@@ -666,7 +679,7 @@ public class Concentrator extends JDialog {
 		try {
 			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
 			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
-			MainWindow.serialPort.enableReceiveTimeout(20000);
+//			MainWindow.serialPort.enableReceiveTimeout(20000);
 			byte[] in = new byte[2];
 			byte[] deal = new byte[256];
 			
@@ -1072,32 +1085,25 @@ public class Concentrator extends JDialog {
 		
 		
 		try {
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(login.getFrame(), 0, login.getFrame().length);
-			byte[] in = new byte[2];
-			byte[] deal = new byte[100];
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-			datacount = 0;
-			header = 0;
-			frame_len = 0;
-			data_len = 0;
-			data_done = false;
-			while(MainWindow.in.read(in) > 0){
-				readBytes(in, deal);
-				if(data_done){
-					break;
-				}
-			}
-			if(data_done){
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				txt_jzqaddr.setText("超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				//get the addr 
 				String addrstr = "";
 				for(int i = 0;i < 5;i++){
-					addrstr = addrstr+String.format("%02x", deal[11-i]&0xFF);
+					addrstr = addrstr+String.format("%02x", response[11-i]&0xFF);
 				}
 				
 				txt_jzqaddr.setText(addrstr);
 			}
-			
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

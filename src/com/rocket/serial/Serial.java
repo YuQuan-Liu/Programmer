@@ -31,6 +31,7 @@ public class Serial {
 		return p;
 	}
 	
+	
 	public static void main(String[] args) {
 		String[] ports = getPortsName();
 		for(int i = 0;i < ports.length;i++)

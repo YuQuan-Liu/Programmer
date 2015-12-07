@@ -30,7 +30,7 @@ public class SerialReader implements Runnable{
 		int buffer_frame_start = 0;  //buffer中frame开始的位置
 		int frame_receive_cnt = 0;  //接收到的frame的字节数
 		try {
-			while(true){
+			while(!Thread.interrupted()){
 				while((len = in.read(buffer)) > 0){
 //					System.out.println(len);
 //					System.out.println(StringUtil.byteArrayToHexStr(buffer, len));

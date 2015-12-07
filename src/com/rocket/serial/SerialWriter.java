@@ -16,18 +16,16 @@ public class SerialWriter implements Runnable{
 
 	@Override
 	public void run() {
-		while(true){
-			try {
+		try {
+			while(!Thread.interrupted()){
 				byte[] out_buffer = (byte[]) queue_out.take();
 				out.write(out_buffer);
-				
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
 	}
 	
 }
