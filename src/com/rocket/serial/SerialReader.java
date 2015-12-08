@@ -26,7 +26,7 @@ public class SerialReader implements Runnable{
 		
 		byte[] buffer_re = new byte[512];  //接收到的所有的数据的buffer
 		int buffer_re_cnt = 0;     //接收到的字节个数
-		byte[] frame = new byte[128];  //存放真正的帧的数据
+		byte[] frame = new byte[256];  //存放真正的帧的数据
 		int buffer_frame_start = 0;  //buffer中frame开始的位置
 		int frame_receive_cnt = 0;  //接收到的frame的字节数
 		try {
@@ -83,7 +83,7 @@ public class SerialReader implements Runnable{
 											}
 											if(cs == frame[frame_len-2] && frame[frame_len-1] == 0x16){
 												//the frame is good;
-												queue_in.put(frame);
+												queue_in.put(Arrays.copyOf(frame, frame_len));
 												System.out.println("Good:~~~"+StringUtil.byteArrayToHexStr(frame, frame_len));
 											}else{
 												//这一帧有错误  放弃
@@ -105,7 +105,7 @@ public class SerialReader implements Runnable{
 										}
 										if(cs == frame[frame_len-2] && frame[frame_len-1] == 0x16){
 											//the frame is good;
-											queue_in.put(frame);
+											queue_in.put(Arrays.copyOf(frame, frame_len));
 											System.out.println("Good:~~~"+StringUtil.byteArrayToHexStr(frame, frame_len));
 										}else{
 											//这一帧有错误  放弃
@@ -127,7 +127,7 @@ public class SerialReader implements Runnable{
 									}
 									if(cs == 0){
 										//the frame is good 
-										queue_in.put(frame);
+										queue_in.put(Arrays.copyOf(frame, 9));
 										System.out.println("Good:~~~"+StringUtil.byteArrayToHexStr(frame, 9));
 									}
 									buffer_re_cnt = 0;   //重新开始接收处理
@@ -144,7 +144,7 @@ public class SerialReader implements Runnable{
 									}
 									if(cs == 0){
 										//the frame is good 
-										queue_in.put(frame);
+										queue_in.put(Arrays.copyOf(frame, 10));
 										System.out.println("Good:~~~"+StringUtil.byteArrayToHexStr(frame, 10));
 									}
 									buffer_re_cnt = 0;   //重新开始接收处理
