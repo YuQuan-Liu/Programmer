@@ -1,27 +1,15 @@
 package com.rocket.serial.task;
 
-import gnu.io.SerialPort;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-
+import java.util.concurrent.TimeUnit;
 import javax.swing.SwingWorker;
 
-import com.rocket.programmer.window.MainWindow;
-import com.rocket.programmer.window.Meter_NoEncrypt;
-import com.rocket.util.Property;
+import com.rocket.serial.SerialReader;
+import com.rocket.serial.SerialWriter;
+import com.rocket.util.StringUtil;
 
 public class TestValve extends SwingWorker<Void, Void> {
 
-	
-	private static OutputStream out = null;
-	private static InputStream in = null;
-	private static SerialPort serialPort = null;
-	
-	public TestValve(OutputStream out, InputStream in, SerialPort serialPort) {
-		this.in = in;
-		this.out = out;
-		this.serialPort = serialPort;
+	public TestValve() {
 	}
 
 	@Override
@@ -34,11 +22,10 @@ public class TestValve extends SwingWorker<Void, Void> {
 		
 		return null;
 	}
-
+	
 	protected void openValve() {
 		//national
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[21];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -73,23 +60,16 @@ public class TestValve extends SwingWorker<Void, Void> {
 		command[20] = (byte)0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(20, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			serialPort.enableReceiveThreshold(1);
-			out.write(command, 0, 21);
-			
-			serialPort.enableReceiveTimeout(10000);
-			byte[] inbytes = new byte[10];
-			Meter_NoEncrypt.countdata = 0;
-			Meter_NoEncrypt.countFE = 0;
-			Meter_NoEncrypt.isData = 0;
-			Meter_NoEncrypt.dataLen = 0;
-			Meter_NoEncrypt.dataFinish = 0;
-			while(in.read(inbytes) > 0){
-				Meter_NoEncrypt.readBytes(inbytes,re);
-				if(Meter_NoEncrypt.dataFinish == 1){
-					break;
-				}
+			if(response == null){
+				//超时
+				System.out.println("超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -99,8 +79,7 @@ public class TestValve extends SwingWorker<Void, Void> {
 	
 	protected void closeValve() {
 		//national
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[21];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -135,25 +114,17 @@ public class TestValve extends SwingWorker<Void, Void> {
 		command[20] = (byte)0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(20, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			serialPort.enableReceiveThreshold(1);
-			out.write(command, 0, 21);
-			
-			serialPort.enableReceiveTimeout(10000);
-			byte[] inbytes = new byte[10];
-			Meter_NoEncrypt.countdata = 0;
-			Meter_NoEncrypt.countFE = 0;
-			Meter_NoEncrypt.isData = 0;
-			Meter_NoEncrypt.dataLen = 0;
-			Meter_NoEncrypt.dataFinish = 0;
-			while(in.read(inbytes) > 0){
-				Meter_NoEncrypt.readBytes(inbytes,re);
-				if(Meter_NoEncrypt.dataFinish == 1){
-					break;
-				}
+			if(response == null){
+				//超时
+				System.out.println("超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

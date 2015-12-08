@@ -14,9 +14,16 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
+import javax.swing.SwingWorker;
+
+import com.rocket.serial.SerialReader;
+import com.rocket.serial.SerialWriter;
+import com.rocket.util.StringUtil;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Font;
+import java.util.concurrent.TimeUnit;
 
 public class Collector extends JDialog {
 	private JTextField showAddrTextField;
@@ -29,13 +36,6 @@ public class Collector extends JDialog {
 	private JButton readAddrBtn;
 	private JLabel label_1;
 	private JButton readCountBtn;
-
-	static int isE = 0;
-	static int isD = 0;
-	static int isA = 0;
-	static int isData = 0;
-	static int countdata = 0;
-	static int dataFinish = 0;
 	
 	final JPanel panel = new JPanel();
 	final JPanel panel_1 = new JPanel();
@@ -127,13 +127,18 @@ public class Collector extends JDialog {
 		writeAddrBtn.setFont(new Font("宋体", Font.PLAIN, 12));
 		writeAddrBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				writeAddr();
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-				readAddr();
+				
+				
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeAddr();
+						Thread.sleep(10);
+						readAddr();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		writeAddrBtn.setBounds(48, 88, 93, 23);
@@ -143,8 +148,17 @@ public class Collector extends JDialog {
 		writeCountBtn.setFont(new Font("宋体", Font.PLAIN, 12));
 		writeCountBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				writeCount();
-				readCount();
+				
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeCount();
+						Thread.sleep(10);
+						readCount();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		writeCountBtn.setBounds(48, 138, 93, 23);
@@ -154,7 +168,14 @@ public class Collector extends JDialog {
 		readAddrBtn.setFont(new Font("宋体", Font.PLAIN, 12));
 		readAddrBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				readAddr();
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readAddr();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		readAddrBtn.setBounds(48, 36, 93, 23);
@@ -164,7 +185,15 @@ public class Collector extends JDialog {
 		readCountBtn.setFont(new Font("宋体", Font.PLAIN, 12));
 		readCountBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				readCount();
+				
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readCount();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		readCountBtn.setBounds(171, 36, 93, 23);
@@ -182,7 +211,6 @@ public class Collector extends JDialog {
 	}
 	
 	public void readAddr(){
-		byte[] re = new byte[20];
 		byte[] command = new byte[10];
 		command[0] = 0x0E;
 		command[1] = 0x0D;
@@ -201,32 +229,21 @@ public class Collector extends JDialog {
 		
 		try {
 			
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 10);
-			byte[] in = new byte[10];
-			countdata = 0;
-			isE = 0;
-			isD = 0;
-			isA = 0;
-			isData = 0;
-			dataFinish = 0;
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytesCollector(in, re,10);
-				if(dataFinish == 1){
-					break;
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[3] == 0x03){
+//					showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
+					showAddrTextField.setText(Integer.toHexString(response[5]&0xFF).toUpperCase() + " " +Integer.toHexString(response[6]&0xFF).toUpperCase());
 				}
-				
-			}
-			
-			re[10] = 0;
-			for(int i =0;i < 10;i++){
-				re[10] ^= re[i];
-			}
-			if(re[10] == 0 && re[3] == 0x03){
-//				showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
-				showAddrTextField.setText(Integer.toHexString(re[5]&0xFF).toUpperCase() + " " +Integer.toHexString(re[6]&0xFF).toUpperCase());
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -234,7 +251,6 @@ public class Collector extends JDialog {
 	}
 	
 	public void readCount(){
-		byte[] re = new byte[20];
 		byte[] command = new byte[10];
 		command[0] = 0x0E;
 		command[1] = 0x0D;
@@ -252,33 +268,21 @@ public class Collector extends JDialog {
 		}
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-			
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 10);
-			byte[] in = new byte[10];
-			countdata = 0;
-			isE = 0;
-			isD = 0;
-			isA = 0;
-			isData = 0;
-			dataFinish = 0;
-			
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytesCollector(in, re,10);
-				if(dataFinish == 1){
-					break;
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[3] == 0x04){
+//					showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
+					showCountTextField.setText(String.valueOf(response[4]&0xFF));
 				}
-				
-			}
-			re[10] = 0;
-			for(int i =0;i < 10;i++){
-				re[10] ^= re[i];
-			}
-			if(re[10] == 0 && re[3] == 0x04){
-//				showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
-				showCountTextField.setText(String.valueOf(re[4]&0xFF));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -338,10 +342,9 @@ public class Collector extends JDialog {
 		}
 		
 		try {
-			
-			MainWindow.serialPort.enableReceiveThreshold(10);
-			MainWindow.out.write(command, 0, 10);
-			
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -384,10 +387,9 @@ public class Collector extends JDialog {
 		}
 		
 		try {
-			
-			MainWindow.serialPort.enableReceiveThreshold(10);
-			MainWindow.out.write(command, 0, 10);
-			
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -423,7 +425,6 @@ public class Collector extends JDialog {
 	}
 	
 	public void readIAP(){
-		byte[] re = new byte[20];
 		byte[] command = new byte[10];
 		command[0] = 0x0E;
 		command[1] = 0x0D;
@@ -442,74 +443,24 @@ public class Collector extends JDialog {
 		}
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 10);
-			byte[] in = new byte[10];
-			countdata = 0;
-			isE = 0;
-			isD = 0;
-			isA = 0;
-			isData = 0;
-			dataFinish = 0;
-			
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytesCollector(in, re,10);
-				if(dataFinish == 1){
-					break;
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[3] == 0x06){
+//					showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
+					showCountTextField.setText("IAP:"+String.valueOf(response[8]&0xFF));
 				}
-				
-			}
-			re[10] = 0;
-			for(int i =0;i < 10;i++){
-				re[10] ^= re[i];
-			}
-			if(re[10] == 0 && re[3] == 0x06){
-//				showAddrTextField.setText(String.valueOf(re[5]&0xFF) + " "+ String.valueOf(re[6]&0xFF));
-				showCountTextField.setText("IAP:"+String.valueOf(re[8]&0xFF));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
-		}
-	}
-	
-	public void readBytesCollector(byte[] in, byte[] re,int dataCount) {
-
-		if (isData == 0) {
-			
-			if(isE == 0){
-				if(in[0] == (byte) 0x0E){
-					isE = 1;
-				}
-			}else{
-				if(isD == 0){
-					if(in[0] == (byte) 0x0D){
-						isD = 1;
-					}
-				}else{
-					if(isA == 0){
-						if(in[0] == (byte) 0x0A){
-							isE = 0;
-							isD = 0;
-							isA = 0;
-							re[0] = 0x0E;
-							re[1] = 0x0D;
-							re[2] = 0x0A;
-							countdata = 3;
-							isData = 1;
-						}
-					}
-				}
-			}
-		} else {
-			re[countdata] = in[0];
-			countdata++;
-			if (countdata == dataCount) {
-				dataFinish = 1;
-				isData = 0;
-				countdata = 0;
-			}
 		}
 	}
 }

@@ -1,45 +1,29 @@
 package com.rocket.serial.task;
-
-import gnu.io.SerialPort;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-
+import java.util.concurrent.TimeUnit;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
-
-import com.rocket.programmer.window.MainWindow;
-import com.rocket.programmer.window.Meter_NoEncrypt;
+import com.rocket.serial.SerialReader;
+import com.rocket.serial.SerialWriter;
 import com.rocket.util.StringPad;
-
-
-
+import com.rocket.util.StringUtil;
 
 public class ReadHalf extends SwingWorker<Void, Void> {
 	
 	private JTextField showNumTextField;
-	
-	private static OutputStream out = null;
-	private static InputStream in = null;
-	private static SerialPort serialPort = null;
 	private static boolean national = true;
 	
 	public ReadHalf(){
 		super();
 	}
 	
-	public ReadHalf(JTextField showNumTextField,OutputStream out,InputStream in,SerialPort serialPort,boolean national){
+	public ReadHalf(JTextField showNumTextField,boolean national){
 		super();
 		this.showNumTextField = showNumTextField;
-		this.in = in;
-		this.out = out;
-		this.serialPort = serialPort;
 		this.national = national;
 	}
 	@Override
 	protected Void doInBackground() throws Exception {
 		
-		serialPort.enableReceiveThreshold(9);
 		while(!isCancelled()){
 			if(national){
 				readhalfNational();
@@ -52,8 +36,7 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 	}
 	
 	private void readhalfNational() {
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[20];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -88,39 +71,26 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 		command[19] = 0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 20);
-			
-			byte[] in = new byte[10];
-			Meter_NoEncrypt.countdata = 0;
-			Meter_NoEncrypt.countFE = 0;
-			Meter_NoEncrypt.isData = 0;
-			Meter_NoEncrypt.dataLen = 0;
-			Meter_NoEncrypt.dataFinish = 0;
-			while(MainWindow.in.read(in) > 0){
-				
-				Meter_NoEncrypt.readBytes(in,re);
-				if(Meter_NoEncrypt.dataFinish == 1){
-					break;
-				}
-			}
-			//deal the data re[]
-			
-			if(Meter_NoEncrypt.checkSum(re)){
-				
-				if(re[11] == (byte)0x1F && re[12] == (byte)0x90){
-					int meterread = re[16]&0xFF;
+			if(response == null){
+				//超时
+				System.out.println("超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
+					int meterread = response[16]&0xFF;
 					meterread = meterread << 8;
-					meterread = meterread | re[15]&0xFF;
+					meterread = meterread | response[15]&0xFF;
 					
-					String half = Integer.toHexString(re[22]&0xFF)+"-"+Integer.toHexString(re[21]&0xFF)+"-"+Integer.toHexString(re[20]&0xFF)+"-"+Integer.toHexString(re[19]&0xFF);
+					String half = Integer.toHexString(response[22]&0xFF)+"-"+Integer.toHexString(response[21]&0xFF)+"-"+Integer.toHexString(response[20]&0xFF)+"-"+Integer.toHexString(response[19]&0xFF);
 					
 					showNumTextField.setText(Integer.toHexString(meterread) +"----"+ half);
 				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -129,8 +99,7 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 	}
 
 	public void readhalf(){
-		byte[] re = new byte[10];
-		byte[] command = new byte[10];
+		byte[] command = new byte[9];
 		command[0] = 0x0E;
 		command[1] = 0x0D;
 		command[2] = 0x0B;
@@ -145,33 +114,20 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 		}
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-			out.write(command, 0, 9);
-			
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			byte[] inbyte = new byte[10];
-			Meter_NoEncrypt.countdata = 0;
-			Meter_NoEncrypt.isE = 0;
-			Meter_NoEncrypt.isD = 0;
-			Meter_NoEncrypt.isB = 0;
-			Meter_NoEncrypt.isData = 0;
-			Meter_NoEncrypt.dataFinish = 0;
-			
-			while(in.read(inbyte) > 0){
-				
-				Meter_NoEncrypt.readBytesMeter(inbyte, re, 9);
-				if(Meter_NoEncrypt.dataFinish == 1){
-					break;
-				}
-				
-			}
-			re[9] = 0;
-			for(int i =0;i < 9;i++){
-				re[9] ^= re[i];
-			}
-			if(re[9] == 0){
-				//showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-				showNumTextField.setText(StringPad.leftPad(Integer.toHexString(re[7]&0xFF).toUpperCase(),2) + " "+StringPad.leftPad(Integer.toHexString(re[6]&0xFF).toUpperCase(),2) + " " +StringPad.leftPad(Integer.toHexString(re[5]&0xFF).toUpperCase(),2)+ " " +StringPad.leftPad(Integer.toHexString(re[4]&0xFF).toUpperCase(),2));
+			if(response == null){
+				//超时
+				System.out.println("超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				showNumTextField.setText(StringPad.leftPad(Integer.toHexString(response[4]&0xFF).toUpperCase(),2)+" "
+				+StringPad.leftPad(Integer.toHexString(response[7]&0xFF).toUpperCase(),2) + " "
+				+StringPad.leftPad(Integer.toHexString(response[6]&0xFF).toUpperCase(),2) + " " 
+				+StringPad.leftPad(Integer.toHexString(response[5]&0xFF).toUpperCase(),2));
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();

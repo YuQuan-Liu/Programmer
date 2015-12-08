@@ -11,25 +11,24 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
+import javax.swing.SwingWorker;
 
 import com.rocket.util.Property;
 import com.rocket.util.StringPad;
+import com.rocket.util.StringUtil;
+import com.rocket.serial.SerialReader;
+import com.rocket.serial.SerialWriter;
 import com.rocket.serial.task.ReadHalf;
 import com.rocket.serial.task.ReadMeter;
 import com.rocket.serial.task.TestValve;
 
-import java.awt.Dialog.ModalityType;
 import java.awt.Font;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.awt.Color;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 public class Meter_NoEncrypt extends JDialog {
 	private JTextField showAddrTextField;
@@ -54,18 +53,8 @@ public class Meter_NoEncrypt extends JDialog {
 	final JButton btn_close = new JButton("关阀");
 	final JButton btn_testValve = new JButton("循环测试");
 	
-	public static int countdata = 0;
-	public static int countFE = 0;
-	public static int isData = 0;
-	public static int dataLen = 0;
-	public static int dataFinish = 0;
 	private JTextField readNumTextField;
 	
-	public static int isE = 0;
-	public static int isD = 0;
-	public static int isB = 0;
-	
-
 	ReadHalf readHalf = null;
 	ReadMeter readMeter = null;
 	TestValve testValve = null;
@@ -141,7 +130,14 @@ public class Meter_NoEncrypt extends JDialog {
 
 		readAddrBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				readAddr();
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readAddr();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		readAddrBtn.setFont(new Font("宋体", Font.PLAIN, 12));
@@ -149,8 +145,14 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(readAddrBtn);
 		readNumBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				new SwingWorker<Void, Void>(){
 
-				readNum();
+					@Override
+					protected Void doInBackground() throws Exception {
+						readNum();
+						return null;
+					}
+				}.execute();
 			}
 		});
 
@@ -163,12 +165,10 @@ public class Meter_NoEncrypt extends JDialog {
 				if (readHalfBtn.getText().equalsIgnoreCase("读半位")) {
 					
 					if(readHalf == null){
-						readHalf = new ReadHalf(showNumTextField,
-								MainWindow.out, MainWindow.in, MainWindow.serialPort,nationalCheckBox.isSelected());
+						readHalf = new ReadHalf(showNumTextField,nationalCheckBox.isSelected());
 					}else{
 						readHalf.cancel(true);
-						readHalf = new ReadHalf(showNumTextField,
-								MainWindow.out, MainWindow.in, MainWindow.serialPort,nationalCheckBox.isSelected());
+						readHalf = new ReadHalf(showNumTextField,nationalCheckBox.isSelected());
 					}
 					readHalfBtn.setText("停止");
 					readHalf.execute();
@@ -185,7 +185,15 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(readHalfBtn);
 		writeAddrBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				writeAddr();
+				
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeAddr();
+						return null;
+					}
+				}.execute();
 			}
 		});
 
@@ -201,7 +209,15 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(addrTextField);
 		writeFirstNumBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				writeFirst();
+				
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeFirst();
+						return null;
+					}
+				}.execute();
 			}
 		});
 
@@ -216,7 +232,14 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(firstNumTextField);
 		writeOutBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				writeOut();
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeOut();
+						return null;
+					}
+				}.execute();
 			}
 		});
 
@@ -227,8 +250,14 @@ public class Meter_NoEncrypt extends JDialog {
 
 		toNationalBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
 
-				writeToNational();
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeToNational();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		toNationalBtn.setFont(new Font("宋体", Font.PLAIN, 12));
@@ -238,7 +267,14 @@ public class Meter_NoEncrypt extends JDialog {
 
 		toSunBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				writeToHD();
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeToHD();
+						return null;
+					}
+				}.execute();
 				// nationalCheckBox.
 			}
 		});
@@ -253,7 +289,14 @@ public class Meter_NoEncrypt extends JDialog {
 		readNumTextField.setColumns(10);
 		writeIAPBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				writeIAP();
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						writeIAP();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		writeIAPBtn.setEnabled(false);
@@ -268,12 +311,10 @@ public class Meter_NoEncrypt extends JDialog {
 				if (readMeterBtn.getText().equalsIgnoreCase("读表")) {
 					
 					if(readMeter == null){
-						readMeter = new ReadMeter(showNumTextField,
-								MainWindow.out, MainWindow.in, MainWindow.serialPort,nationalCheckBox.isSelected());
+						readMeter = new ReadMeter(showNumTextField,nationalCheckBox.isSelected());
 					}else{
 						readMeter.cancel(true);
-						readMeter = new ReadMeter(showNumTextField,
-								MainWindow.out, MainWindow.in, MainWindow.serialPort,nationalCheckBox.isSelected());
+						readMeter = new ReadMeter(showNumTextField,nationalCheckBox.isSelected());
 					}
 					readMeterBtn.setText("停止");
 					readMeter.execute();
@@ -290,7 +331,14 @@ public class Meter_NoEncrypt extends JDialog {
 		
 		btn_open.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				openValve();
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						openValve();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		btn_open.setEnabled(false);
@@ -299,7 +347,14 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(btn_open);
 		btn_close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				closeValve();
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						closeValve();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		
@@ -310,13 +365,14 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(btn_close);
 		btn_testValve.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
 				if (btn_testValve.getText().equalsIgnoreCase("循环测试")) {
 					
 					if(testValve == null){
-						testValve = new TestValve(MainWindow.out, MainWindow.in, MainWindow.serialPort);
+						testValve = new TestValve();
 					}else{
 						testValve.cancel(true);
-						testValve = new TestValve(MainWindow.out, MainWindow.in, MainWindow.serialPort);
+						testValve = new TestValve();
 					}
 					btn_testValve.setText("停止");
 					testValve.execute();
@@ -335,8 +391,15 @@ public class Meter_NoEncrypt extends JDialog {
 		btnWriteValveTimeout.setEnabled(false);
 		btnWriteValveTimeout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int timeout = Integer.parseInt(txtValveTimeout.getText());
-				writeValveTimeout(timeout);
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						int timeout = Integer.parseInt(txtValveTimeout.getText());
+						writeValveTimeout(timeout);
+						return null;
+					}
+				}.execute();
 			}
 		});
 		btnWriteValveTimeout.setFont(new Font("宋体", Font.PLAIN, 12));
@@ -416,8 +479,7 @@ public class Meter_NoEncrypt extends JDialog {
 	}
 
 	protected void readValveTimeout() {
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[20];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -452,35 +514,23 @@ public class Meter_NoEncrypt extends JDialog {
 		command[19] = 0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 20);
-			
-			byte[] in = new byte[10];
-			countdata = 0;
-			countFE = 0;
-			isData = 0;
-			dataLen = 0;
-			dataFinish = 0;
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytes(in,re);
-				if(dataFinish == 1){
-					break;
-				}
-			}
-			//deal the data re[]
-			
-			if(checkSum(re)){
-				
-				if(re[11] == (byte)0x92 && re[12] == (byte)0xA0){
-					byte valvetimeout = re[14];
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[11] == (byte)0x92 && response[12] == (byte)0xA0){
+					byte valvetimeout = response[14];
 					
 					JOptionPane.showMessageDialog(panel_1, valvetimeout+"s");
 				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -488,8 +538,7 @@ public class Meter_NoEncrypt extends JDialog {
 	}
 
 	protected void writeValveTimeout(int timeout) {
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[21];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -524,33 +573,22 @@ public class Meter_NoEncrypt extends JDialog {
 		command[20] = (byte)0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 21);
-			
-			byte[] in = new byte[10];
-			countdata = 0;
-			countFE = 0;
-			isData = 0;
-			dataLen = 0;
-			dataFinish = 0;
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytes(in,re);
-				if(dataFinish == 1){
-					break;
-				}
-			}
-			//deal the data re[]
-			
-			if(checkSum(re)){
-				if(re[11] == (byte)0x92 && re[12] == (byte)0xA0){
-					byte valvetimeout = re[14];
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[11] == (byte)0x92 && response[12] == (byte)0xA0){
+					byte valvetimeout = response[14];
 					JOptionPane.showMessageDialog(panel_1, valvetimeout+"s");
 				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -559,8 +597,7 @@ public class Meter_NoEncrypt extends JDialog {
 
 	protected void closeValve() {
 		//national
-				byte[] re = new byte[40];
-				byte[] command = new byte[40];
+				byte[] command = new byte[21];
 				
 				command[0] = (byte) 0xFE;
 				command[1] = (byte) 0xFE;
@@ -595,36 +632,25 @@ public class Meter_NoEncrypt extends JDialog {
 				command[20] = (byte)0x16;
 				
 				try {
+					SerialWriter.queue_out.clear();
+					SerialReader.queue_in.clear();
+					SerialWriter.queue_out.put(command);
+					byte[] response = (byte[]) SerialReader.queue_in.poll(20, TimeUnit.SECONDS);
 					
-//					MainWindow.serialPort.enableReceiveTimeout(2000);
-					MainWindow.serialPort.enableReceiveThreshold(1);
-					MainWindow.out.write(command, 0, 21);
-					
-					byte[] in = new byte[10];
-					countdata = 0;
-					countFE = 0;
-					isData = 0;
-					dataLen = 0;
-					dataFinish = 0;
-					while(MainWindow.in.read(in) > 0){
-						
-						readBytes(in,re);
-						if(dataFinish == 1){
-							break;
-						}
-					}
-					//deal the data re[]
-					
-					if(checkSum(re)){
-						if(re[11] == (byte)0x17 && re[12] == (byte)0xA0){
-							byte st = re[14];
+					if(response == null){
+						//超时
+						System.out.println("超时");
+						JOptionPane.showMessageDialog(panel_1, "超时");
+					}else{
+						System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+						if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+							byte st = response[14];
 							if((st & 0x03) == 0x02){
 								//close 
 								JOptionPane.showMessageDialog(panel_1, "关");
 							}
 						}
 					}
-					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -634,8 +660,7 @@ public class Meter_NoEncrypt extends JDialog {
 
 	protected void openValve() {
 		//national
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[21];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -670,37 +695,25 @@ public class Meter_NoEncrypt extends JDialog {
 		command[20] = (byte)0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(20, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 21);
-			
-			MainWindow.serialPort.enableReceiveTimeout(10000);
-			byte[] in = new byte[10];
-			countdata = 0;
-			countFE = 0;
-			isData = 0;
-			dataLen = 0;
-			dataFinish = 0;
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytes(in,re);
-				if(dataFinish == 1){
-					break;
-				}
-			}
-			//deal the data re[]
-			MainWindow.serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
-			if(checkSum(re)){
-				if(re[11] == (byte)0x17 && re[12] == (byte)0xA0){
-					byte st = re[14];
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+					byte st = response[14];
 					if((st & 0x03) == 0x00){
 						//open 
 						JOptionPane.showMessageDialog(panel_1, "开");
 					}
 				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -710,8 +723,7 @@ public class Meter_NoEncrypt extends JDialog {
 	public void readAddr(){
 		if(nationalCheckBox.isSelected()){
 			//national
-			byte[] re = new byte[40];
-			byte[] command = new byte[40];
+			byte[] command = new byte[20];
 			
 			command[0] = (byte) 0xFE;
 			command[1] = (byte) 0xFE;
@@ -744,49 +756,37 @@ public class Meter_NoEncrypt extends JDialog {
 			command[19] = (byte)0x16;
 			
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-//				MainWindow.serialPort.enableReceiveTimeout(2000);
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 20);
-				MainWindow.serialPort.enableReceiveTimeout(10000);
-				byte[] in = new byte[10];
-				countdata = 0;
-				countFE = 0;
-				isData = 0;
-				dataLen = 0;
-				dataFinish = 0;
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytes(in,re);
-					if(dataFinish == 1){
-						break;
-					}
-				}
-				//deal the data re[]
-				MainWindow.serialPort.enableReceiveTimeout(Property.getIntValue("TIMEOUT"));
-				if(checkSum(re)){
-					if(re[11] == (byte)0x0A && re[12] == (byte)0x81){
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if(response[11] == (byte)0x0A && response[12] == (byte)0x81){
 						String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
 						for(int i = 8;i > 1;i--){
-							String pre0 = Integer.toHexString(re[i]&0xFF).toUpperCase();
+							String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
 							if(pre0.length() == 1){
 								pre0 = "0"+pre0;
 							}
-//							System.out.println(pre0);
 							addr = addr + pre0 +" ";
 						}
 						showAddrTextField.setText(addr);
 					}
 				}
-				
+								
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			
 		}else{
 			//sun
-			byte[] re = new byte[10];
-			byte[] command = new byte[10];
+			byte[] command = new byte[9];
 			command[0] = 0x0E;
 			command[1] = 0x0D;
 			command[2] = 0x0B;
@@ -801,33 +801,19 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 			
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 9);
-				byte[] in = new byte[10];
-				countdata = 0;
-				isE = 0;
-				isD = 0;
-				isB = 0;
-				isData = 0;
-				dataFinish = 0;
-				
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytesMeter(in, re, 9);
-					if(dataFinish == 1){
-						break;
-					}
-					
-				}
-				
-				re[9] = 0;
-				for(int i =0;i < 9;i++){
-					re[9] ^= re[i];
-				}
-				if(re[9] == 0){
-					showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-					showNumTextField.setText(StringPad.leftPad(Integer.toHexString(re[6]&0xFF).toUpperCase(),2)+ " " +StringPad.leftPad(Integer.toHexString(re[7]&0xFF).toUpperCase(),2));
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					showAddrTextField.setText(String.valueOf(response[5]&0xFF));
+					showNumTextField.setText(StringPad.leftPad(Integer.toHexString(response[6]&0xFF).toUpperCase(),2)+ " " +StringPad.leftPad(Integer.toHexString(response[7]&0xFF).toUpperCase(),2));
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -840,8 +826,7 @@ public class Meter_NoEncrypt extends JDialog {
 	public void readNum() {
 		if (nationalCheckBox.isSelected()) {
 			// national
-			byte[] re = new byte[40];
-			byte[] command = new byte[40];
+			byte[] command = new byte[20];
 			
 			command[0] = (byte) 0xFE;
 			command[1] = (byte) 0xFE;
@@ -881,14 +866,6 @@ public class Meter_NoEncrypt extends JDialog {
 						}
 					}
 				}
-//				command[6] = (byte) Integer.parseInt(addrs[0],16);
-//				command[7] = (byte) Integer.parseInt(addrs[1],16);
-//				command[8] = (byte) Integer.parseInt(addrs[2],16);
-//				command[9] = (byte) Integer.parseInt(addrs[3],16);
-//				command[10] = (byte) Integer.parseInt(addrs[4],16);
-//				command[11] = (byte) Integer.parseInt(addrs[5],16);
-//				command[12] = (byte) Integer.parseInt(addrs[6],16);
-				
 				command[12] = (byte) Integer.parseInt(addrs[0],16);
 				command[11] = (byte) Integer.parseInt(addrs[1],16);
 				command[10] = (byte) Integer.parseInt(addrs[2],16);
@@ -915,44 +892,31 @@ public class Meter_NoEncrypt extends JDialog {
 			command[19] = 0x16;
 			
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-//				MainWindow.serialPort.enableReceiveTimeout(2000);
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 20);
-				
-				byte[] in = new byte[10];
-				countdata = 0;
-				countFE = 0;
-				isData = 0;
-				dataLen = 0;
-				dataFinish = 0;
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytes(in,re);
-					if(dataFinish == 1){
-						break;
-					}
-				}
-				//deal the data re[]
-				
-				if(checkSum(re)){
-					
-					if(re[11] == (byte)0x1F && re[12] == (byte)0x90){
-						int meterread = re[16]&0xFF;
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
+						int meterread = response[16]&0xFF;
 						meterread = meterread << 8;
-						meterread = meterread | re[15]&0xFF;
+						meterread = meterread | response[15]&0xFF;
 						
 						showNumTextField.setText(Integer.toHexString(meterread));
 					}
 				}
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else {
 			// sun
-			byte[] re = new byte[10];
-			byte[] command = new byte[10];
+			byte[] command = new byte[9];
 			command[0] = 0x0E;
 			command[1] = 0x0D;
 			command[2] = 0x0B;
@@ -981,48 +945,32 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 9);
-				byte[] in = new byte[10];
-				countdata = 0;
-				isE = 0;
-				isD = 0;
-				isB = 0;
-				isData = 0;
-				dataFinish = 0;
-				
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytesMeter(in, re, 9);
-					if(dataFinish == 1){
-						break;
-					}
-					
-				}
-				
-				re[9] = 0;
-				for (int i = 0; i < 9; i++) {
-					re[9] ^= re[i];
-				}
-				if (re[9] == 0) {
-					
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 					if(addr.equals("")){
-						showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
+						showAddrTextField.setText(String.valueOf(response[5] & 0xFF));
 						showNumTextField.setText(StringPad.leftPad(Integer.toHexString(
-								re[6] & 0xFF).toUpperCase(),2)
+								response[6] & 0xFF).toUpperCase(),2)
 								+ " "
-								+ StringPad.leftPad(Integer.toHexString(re[7] & 0xFF)
+								+ StringPad.leftPad(Integer.toHexString(response[7] & 0xFF)
 										.toUpperCase(),2));
 					}else{
-						showAddrTextField.setText(String.valueOf(re[4] & 0xFF));
+						showAddrTextField.setText(String.valueOf(response[4] & 0xFF));
 						showNumTextField.setText(StringPad.leftPad(Integer.toHexString(
-								re[6] & 0xFF).toUpperCase(),2)
+								response[6] & 0xFF).toUpperCase(),2)
 								+ " "
-								+ StringPad.leftPad(Integer.toHexString(re[7] & 0xFF)
+								+ StringPad.leftPad(Integer.toHexString(response[7] & 0xFF)
 										.toUpperCase(),2));
 					}
-					
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -1033,8 +981,7 @@ public class Meter_NoEncrypt extends JDialog {
 	public void writeAddr() {
 		if (nationalCheckBox.isSelected()) {
 			// national
-			byte[] re = new byte[40];
-			byte[] command = new byte[40];
+			byte[] command = new byte[27];
 			
 			command[0] = (byte) 0xFE;
 			command[1] = (byte) 0xFE;
@@ -1086,15 +1033,7 @@ public class Meter_NoEncrypt extends JDialog {
 							return;
 						}
 					}
-				}
-//				command[18] = (byte) Integer.parseInt(addrs[0],16);
-//				command[19] = (byte) Integer.parseInt(addrs[1],16);
-//				command[20] = (byte) Integer.parseInt(addrs[2],16);
-//				command[21] = (byte) Integer.parseInt(addrs[3],16);
-//				command[22] = (byte) Integer.parseInt(addrs[4],16);
-//				command[23] = (byte) Integer.parseInt(addrs[5],16);
-//				command[24] = (byte) Integer.parseInt(addrs[6],16);
-//				
+				}				
 				command[24] = (byte) Integer.parseInt(addrs[0],16);
 				command[23] = (byte) Integer.parseInt(addrs[1],16);
 				command[22] = (byte) Integer.parseInt(addrs[2],16);
@@ -1111,48 +1050,34 @@ public class Meter_NoEncrypt extends JDialog {
 			command[26] = 0x16;
 			
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-//				MainWindow.serialPort.enableReceiveTimeout(2000);
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 27);
-				
-				byte[] in = new byte[10];
-				countdata = 0;
-				countFE = 0;
-				isData = 0;
-				dataLen = 0;
-				dataFinish = 0;
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytes(in,re);
-					if(dataFinish == 1){
-						break;
-					}
-				}
-				//deal the data re[]
-				
-				if(checkSum(re)){
-					
-					if(re[11] == (byte)0x18 && re[12] == (byte)0xA0){
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if(response[11] == (byte)0x18 && response[12] == (byte)0xA0){
 						String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
 						for(int i = 8;i > 1;i--){
-							String pre0 = Integer.toHexString(re[i]&0xFF).toUpperCase();
+							String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
 							if(pre0.length() == 1){
 								pre0 = "0"+pre0;
 							}
-//							System.out.println(pre0);
 							addr = addr + pre0 +" ";
 						}
 						showAddrTextField.setText(addr);
 					}
 				}
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else {
 			// sun
-
 			// byte addr = ;
 			int addr = 0;
 			try {
@@ -1168,9 +1093,7 @@ public class Meter_NoEncrypt extends JDialog {
 				e.printStackTrace();
 				return;
 			}
-
-			byte[] re = new byte[10];
-			byte[] command = new byte[10];
+			byte[] command = new byte[9];
 			command[0] = 0x0E;
 			command[1] = 0x0D;
 			command[2] = 0x0B;
@@ -1185,34 +1108,13 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 
 			try {
-
-				MainWindow.out.write(command, 0, 9);
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
 				Thread.sleep(300);
-				MainWindow.out.write(command, 0, 9);
+				SerialWriter.queue_out.put(command);
 
 				readAddr();
-//				command[3] = (byte) 0x03;
-//				command[8] = 0x00;
-//				for (int i = 0; i < 8; i++) {
-//					command[8] ^= command[i];
-//				}
-//				MainWindow.serialPort.enableReceiveThreshold(9);
-//				MainWindow.out.write(command, 0, 9);
-//				while (MainWindow.in.read(re) > 0) {
-//					re[9] = 0;
-//					for (int i = 0; i < 9; i++) {
-//						re[9] ^= re[i];
-//					}
-//					if (re[9] == 0) {
-//						showAddrTextField.setText(String.valueOf(re[5] & 0xFF));
-//						showNumTextField.setText(Integer.toHexString(
-//								re[6] & 0xFF).toUpperCase()
-//								+ " "
-//								+ Integer.toHexString(re[7] & 0xFF)
-//										.toUpperCase());
-//						break;
-//					}
-//				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -1223,8 +1125,7 @@ public class Meter_NoEncrypt extends JDialog {
 	public void writeFirst() {
 		if (nationalCheckBox.isSelected()) {
 			// national
-			byte[] re = new byte[40];
-			byte[] command = new byte[40];
+			byte[] command = new byte[25];
 			
 			command[0] = (byte) 0xFE;
 			command[1] = (byte) 0xFE;
@@ -1291,35 +1192,23 @@ public class Meter_NoEncrypt extends JDialog {
 			command[24] = 0x16;
 			
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-//				MainWindow.serialPort.enableReceiveTimeout(2000);
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 25);
-				
-				byte[] in = new byte[10];
-				countdata = 0;
-				countFE = 0;
-				isData = 0;
-				dataLen = 0;
-				dataFinish = 0;
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytes(in,re);
-					if(dataFinish == 1){
-						break;
-					}
-				}
-				//deal the data re[]
-				
-				if(checkSum(re)){
-					
-					if(re[11] == (byte)0x16 && re[12] == (byte)0xA0){
-						if(re[14] == (byte)0x00 && re[15] == (byte)0x00){
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if(response[11] == (byte)0x16 && response[12] == (byte)0xA0){
+						if(response[14] == (byte)0x00 && response[15] == (byte)0x00){
 							JOptionPane.showMessageDialog(panel_1, "修改成功！");
 						}
 					}
 				}
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1348,9 +1237,8 @@ public class Meter_NoEncrypt extends JDialog {
 				e.printStackTrace();
 				return;
 			}
-
-			byte[] re = new byte[10];
-			byte[] command = new byte[10];
+			
+			byte[] command = new byte[9];
 			command[0] = 0x0E;
 			command[1] = 0x0D;
 			command[2] = 0x0B;
@@ -1369,46 +1257,32 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 
 			try {
-
-				MainWindow.out.write(command, 0, 9);
+				
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
 				Thread.sleep(300);
-				MainWindow.out.write(command, 0, 9);
-
+				SerialWriter.queue_out.put(command);
+				
 				command[3] = (byte) 0x06;
 				command[8] = 0x00;
 				for (int i = 0; i < 8; i++) {
 					command[8] ^= command[i];
 				}
+				SerialWriter.queue_out.put(command);
 				
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 9);
-				byte[] in = new byte[10];
-				countdata = 0;
-				isE = 0;
-				isD = 0;
-				isB = 0;
-				isData = 0;
-				dataFinish = 0;
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytesMeter(in, re, 9);
-					if(dataFinish == 1){
-						break;
-					}
-					
-				}
-				
-				re[9] = 0;
-				for (int i = 0; i < 9; i++) {
-					re[9] ^= re[i];
-				}
-				if (re[9] == 0) {
-					// showAddrTextField.setText(String.valueOf(re[5]&0xFF));
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 					showNumTextField.setText(StringPad.leftPad(Integer.toHexString(
-							re[6] & 0xFF).toUpperCase(),2)
+							response[6] & 0xFF).toUpperCase(),2)
 							+ " "
-							+ StringPad.leftPad(Integer.toHexString(re[7] & 0xFF)
+							+ StringPad.leftPad(Integer.toHexString(response[7] & 0xFF)
 									.toUpperCase(),2));
 				}
 			} catch (Exception e1) {
@@ -1426,9 +1300,7 @@ public class Meter_NoEncrypt extends JDialog {
 			JOptionPane.showMessageDialog(panel_1, "协议不支持");
 		} else {
 			// sun
-
-			byte[] re = new byte[10];
-			byte[] command = new byte[10];
+			byte[] command = new byte[9];
 			command[0] = 0x0E;
 			command[1] = 0x0D;
 			command[2] = 0x0B;
@@ -1444,36 +1316,20 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 9);
-				byte[] in = new byte[10];
-				countdata = 0;
-				isE = 0;
-				isD = 0;
-				isB = 0;
-				isData = 0;
-				dataFinish = 0;
-				
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytesMeter(in, re, 9);
-					if(dataFinish == 1){
-						break;
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if (response[3] == 0x07) {
+						nationalCheckBox.setSelected(true);
 					}
-					
-				}
-				
-				re[9] = 0;
-				for (int i = 0; i < 9; i++) {
-					re[9] ^= re[i];
-				}
-				if (re[9] == 0 && re[3] == 0x07) {
-					// showAddrTextField.setText(String.valueOf(re[5]&0xFF));
-					// showNumTextField.setText(Integer.toHexString(re[6]&0xFF).toUpperCase()
-					// + " "
-					// +Integer.toHexString(re[7]&0xFF).toUpperCase());
-					nationalCheckBox.setSelected(true);
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -1482,88 +1338,6 @@ public class Meter_NoEncrypt extends JDialog {
 		}
 	}
 	
-	/**
-	 * 和MCU相同 接收数据
-	 * @param in
-	 * @param re
-	 */
-	public static void readBytes(byte[] in, byte[] re) {
-
-		if (isData == 0) {
-			if (in[0] == (byte) 0xFE) {
-				countFE++;
-			} else {
-				if (in[0] == (byte) 0x68) {
-					if (countFE >= 2) {
-						isData = 1;
-						countFE = 0;
-						countdata = 0;
-						re[0] = in[0];
-						countdata++;
-					}
-				} else {
-					countFE = 0;
-				}
-			}
-		} else {
-			re[countdata] = in[0];
-			countdata++;
-			if (countdata == 11) {
-				dataLen = re[10] + 13;
-			}
-			if (countdata >= 11 && countdata >= dataLen) {
-				dataFinish = 1;
-				dataLen = 0;
-				isData = 0;
-				countdata = 0;
-			}
-		}
-	}
-	
-	/**
-	 * 和MCU相同 接收数据
-	 * @param in
-	 * @param re
-	 * @param dataCount cjq 10 meter 9
-	 */
-	public static void readBytesMeter(byte[] in, byte[] re,int dataCount) {
-
-		if (isData == 0) {
-			
-			if(isE == 0){
-				if(in[0] == (byte) 0x0E){
-					isE = 1;
-				}
-			}else{
-				if(isD == 0){
-					if(in[0] == (byte) 0x0D){
-						isD = 1;
-					}
-				}else{
-					if(isB == 0){
-						if(in[0] == (byte) 0x0B){
-							isE = 0;
-							isD = 0;
-							isB = 0;
-							re[0] = 0x0E;
-							re[1] = 0x0D;
-							re[2] = 0x0B;
-							countdata = 3;
-							isData = 1;
-						}
-					}
-				}
-			}
-		} else {
-			re[countdata] = in[0];
-			countdata++;
-			if (countdata == dataCount) {
-				dataFinish = 1;
-				isData = 0;
-				countdata = 0;
-			}
-		}
-	}
 	
 	/**
 	 * 检查接收到的数据的校验
@@ -1586,8 +1360,7 @@ public class Meter_NoEncrypt extends JDialog {
 		
 		if (nationalCheckBox.isSelected()) {
 			// national
-			byte[] re = new byte[40];
-			byte[] command = new byte[40];
+			byte[] command = new byte[20];
 			
 			command[0] = (byte) 0xFE;
 			command[1] = (byte) 0xFE;
@@ -1622,39 +1395,21 @@ public class Meter_NoEncrypt extends JDialog {
 			command[19] = 0x16;
 			
 			try {
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
-//				MainWindow.serialPort.enableReceiveTimeout(2000);
-				MainWindow.serialPort.enableReceiveThreshold(1);
-				MainWindow.out.write(command, 0, 20);
-				
-				byte[] in = new byte[10];
-				countdata = 0;
-				countFE = 0;
-				isData = 0;
-				dataLen = 0;
-				dataFinish = 0;
-				while(MainWindow.in.read(in) > 0){
-					
-					readBytes(in,re);
-					if(dataFinish == 1){
-						break;
-					}
-				}
-				//deal the data re[]
-				
-				if(checkSum(re)){
-					
-					if(re[11] == (byte)0x98 && re[12] == (byte)0xA0 && re[9] == (byte)0x84){
-//						int meterread = re[16]&0xFF;
-//						meterread = meterread << 8;
-//						meterread = meterread | re[15]&0xFF;
-//						
-//						showNumTextField.setText(Integer.toHexString(meterread));
-//						JOptionPane.showMessageDialog(panel_1, "转到海大协议！");
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if(response[11] == (byte)0x98 && response[12] == (byte)0xA0 && response[9] == (byte)0x84){
 						nationalCheckBox.setSelected(false);
 					}
 				}
-				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1664,8 +1419,7 @@ public class Meter_NoEncrypt extends JDialog {
 	}
 	
 	public void writeOut(){
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[20];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -1700,42 +1454,29 @@ public class Meter_NoEncrypt extends JDialog {
 		command[19] = 0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 20);
-			
-			byte[] in = new byte[10];
-			countdata = 0;
-			countFE = 0;
-			isData = 0;
-			dataLen = 0;
-			dataFinish = 0;
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytes(in,re);
-				if(dataFinish == 1){
-					break;
-				}
-			}
-			//deal the data re[]
-			
-			if(checkSum(re)){
-				
-				if(re[11] == (byte)0x19 && re[12] == (byte)0xA0 && re[9] == (byte)0x84){
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[11] == (byte)0x19 && response[12] == (byte)0xA0 && response[9] == (byte)0x84){
 //					nationalCheckBox.setSelected(false);
 					JOptionPane.showMessageDialog(panel_1, "出厂设置成功！");
 				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public void writeIAP(){
-		byte[] re = new byte[40];
-		byte[] command = new byte[40];
+		byte[] command = new byte[20];
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -1770,34 +1511,22 @@ public class Meter_NoEncrypt extends JDialog {
 		command[19] = 0x16;
 		
 		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-//			MainWindow.serialPort.enableReceiveTimeout(2000);
-			MainWindow.serialPort.enableReceiveThreshold(1);
-			MainWindow.out.write(command, 0, 20);
-			
-			byte[] in = new byte[10];
-			countdata = 0;
-			countFE = 0;
-			isData = 0;
-			dataLen = 0;
-			dataFinish = 0;
-			while(MainWindow.in.read(in) > 0){
-				
-				readBytes(in,re);
-				if(dataFinish == 1){
-					break;
-				}
-			}
-			//deal the data re[]
-			
-			if(checkSum(re)){
-				
-				if(re[11] == (byte)0x96 && re[12] == (byte)0xA0 && re[9] == (byte)0x84){
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[11] == (byte)0x96 && response[12] == (byte)0xA0 && response[9] == (byte)0x84){
 //					nationalCheckBox.setSelected(false);
 					JOptionPane.showMessageDialog(panel_1, "IAP设置成功，给表断电之后，上电，使用IAP更新程序！");
 				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
