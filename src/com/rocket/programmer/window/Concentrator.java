@@ -336,7 +336,7 @@ public class Concentrator extends JDialog {
 		btn_485.setBounds(173, 112, 93, 23);
 		panel_3.add(btn_485);
 		
-		JButton btn_queryslave = new JButton("查询表类型");
+		JButton btn_queryslave = new JButton("查询底层类型");
 		btn_queryslave.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_queryslave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -351,7 +351,7 @@ public class Concentrator extends JDialog {
 				}.execute();
 			}
 		});
-		btn_queryslave.setBounds(320, 112, 125, 23);
+		btn_queryslave.setBounds(450, 112, 125, 23);
 		panel_3.add(btn_queryslave);
 		
 		JButton btn_test = new JButton("测试");
@@ -571,6 +571,23 @@ public class Concentrator extends JDialog {
 		btn_queryIP.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_queryIP.setBounds(173, 337, 93, 23);
 		panel_3.add(btn_queryIP);
+		
+		JButton btn_cjq = new JButton("采集器");
+		btn_cjq.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						modifyslave((byte)0xBB);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_cjq.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_cjq.setBounds(320, 112, 93, 23);
+		panel_3.add(btn_cjq);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new SwingWorker<Void, Void>(){
@@ -1605,6 +1622,9 @@ public class Concentrator extends JDialog {
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[15] == (byte)0xAA){
 					JOptionPane.showMessageDialog(panel_1, "MBUS");
+				}
+				if(response[15] == (byte)0xBB){
+					JOptionPane.showMessageDialog(panel_1, "采集器");
 				}
 				if(response[15] == (byte)0xFF){
 					JOptionPane.showMessageDialog(panel_1, "485");
