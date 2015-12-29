@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import java.awt.Dialog.ModalityType;
 import javax.swing.border.TitledBorder;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
@@ -23,8 +24,20 @@ import com.rocket.util.StringUtil;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Font;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import javax.swing.UIManager;
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+
 import java.awt.Color;
 
 public class Collector extends JDialog {
@@ -39,7 +52,7 @@ public class Collector extends JDialog {
 	private JTextField txt_meteraddr;
 	private JButton button_6;
 	private JButton btnExcel;
-	private JTextField textField_2;
+	private JTextField txt_show;
 	private JButton btnExcel_1;
 	private JButton btnExcel_2;
 	/**
@@ -196,7 +209,9 @@ public class Collector extends JDialog {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						openCJQ();
+
+						String raddr = txt_cjqaddr.getText();
+						openCJQ(raddr,1);
 						return null;
 					}
 				}.execute();
@@ -230,7 +245,9 @@ public class Collector extends JDialog {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						closeCJQ();
+
+						String raddr = txt_cjqaddr.getText();
+						closeCJQ(raddr,1);
 						return null;
 					}
 				}.execute();
@@ -247,7 +264,8 @@ public class Collector extends JDialog {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						readMeter();
+						String raddr = txt_meteraddr.getText();
+						readMeter(raddr,1);
 						return null;
 					}
 				}.execute();
@@ -270,7 +288,8 @@ public class Collector extends JDialog {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						openValve();
+						String raddr = txt_meteraddr.getText();
+						openValve(raddr,1);
 						return null;
 					}
 				}.execute();
@@ -287,7 +306,8 @@ public class Collector extends JDialog {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						closeValve();
+						String raddr = txt_meteraddr.getText();
+						closeValve(raddr,1);
 						return null;
 					}
 				}.execute();
@@ -298,30 +318,90 @@ public class Collector extends JDialog {
 		panel_2.add(button_6);
 		
 		btnExcel = new JButton("Excel抄表");
+		btnExcel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						JFileChooser jfc = new JFileChooser();
+						jfc.showOpenDialog(panel_1);
+						File f = jfc.getSelectedFile();
+						if(f != null){
+							txt_show.setText("开始抄表："+f.getAbsolutePath());
+							//read the excel and read
+							readMeters(f.getAbsolutePath());
+							txt_show.setText("抄表完成");
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
 		btnExcel.setFont(new Font("宋体", Font.PLAIN, 14));
 		btnExcel.setBounds(48, 222, 117, 23);
 		panel_2.add(btnExcel);
 		
-		textField_2 = new JTextField();
-		textField_2.setToolTipText("高～～～～～低");
-		textField_2.setFont(new Font("宋体", Font.PLAIN, 14));
-		textField_2.setEditable(false);
-		textField_2.setColumns(10);
-		textField_2.setBounds(48, 189, 351, 23);
-		panel_2.add(textField_2);
+		txt_show = new JTextField();
+		txt_show.setToolTipText("");
+		txt_show.setFont(new Font("宋体", Font.PLAIN, 14));
+		txt_show.setEditable(false);
+		txt_show.setColumns(10);
+		txt_show.setBounds(48, 189, 514, 23);
+		panel_2.add(txt_show);
 		
 		btnExcel_1 = new JButton("Excel开阀");
+		btnExcel_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						JFileChooser jfc = new JFileChooser();
+						jfc.showOpenDialog(panel_1);
+						File f = jfc.getSelectedFile();
+						if(f != null){
+							txt_show.setText("开始开阀："+f.getAbsolutePath());
+							//read the excel and read
+							openValves(f.getAbsolutePath());
+							txt_show.setText("开阀完成");
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
 		btnExcel_1.setFont(new Font("宋体", Font.PLAIN, 14));
 		btnExcel_1.setBounds(206, 222, 117, 23);
 		panel_2.add(btnExcel_1);
 		
 		btnExcel_2 = new JButton("Excel关阀");
+		btnExcel_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						JFileChooser jfc = new JFileChooser();
+						jfc.showOpenDialog(panel_1);
+						File f = jfc.getSelectedFile();
+						if(f != null){
+							txt_show.setText("开始关阀："+f.getAbsolutePath());
+							//read the excel and read
+							closeValves(f.getAbsolutePath());
+							txt_show.setText("关阀完成");
+						}
+						return null;
+					}
+				}.execute();
+			}
+		});
 		btnExcel_2.setFont(new Font("宋体", Font.PLAIN, 14));
 		btnExcel_2.setBounds(359, 222, 117, 23);
 		panel_2.add(btnExcel_2);
 	}
 	
-	public void openCJQ(){
+	public boolean openCJQ(String raddr,int show){
 		byte[] command = new byte[21];
 		
 		command[0] = (byte) 0xFE;
@@ -341,7 +421,6 @@ public class Collector extends JDialog {
 //		command[12] = (byte) 0xAA;
 		
 		//addr
-		String raddr = txt_cjqaddr.getText();
 		if(raddr.equals("")){
 			command[6] = (byte) 0x01;
 			command[7] = (byte) 0x00;
@@ -353,7 +432,7 @@ public class Collector extends JDialog {
 		}else{
 			if(raddr.length() != 12 || !raddr.matches("[0-9fF]*")){
 				JOptionPane.showMessageDialog(panel_1, "采集器地址错误！");
-				return;
+				return false;
 			}
 			//cjqaddr
 			byte[] caddr = StringUtil.string2Byte(raddr);
@@ -389,23 +468,30 @@ public class Collector extends JDialog {
 			if(response == null){
 				//超时
 				System.out.println("超时");
-				JOptionPane.showMessageDialog(panel_1, "超时");
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}
+				return false;
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
 					byte st = response[14];
 					if((st & 0x03) == 0x00){
 						//open 
-						JOptionPane.showMessageDialog(panel_1, "开");
+						if(show == 1){
+							JOptionPane.showMessageDialog(panel_1, "开");
+						}
+						return true;
 					}
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return false;
 	}
 	
-	public void closeCJQ(){
+	public boolean closeCJQ(String raddr,int show){
 		byte[] command = new byte[21];
 		
 		command[0] = (byte) 0xFE;
@@ -425,7 +511,6 @@ public class Collector extends JDialog {
 //		command[12] = (byte) 0xAA;
 		
 		//addr
-		String raddr = txt_cjqaddr.getText();
 		if(raddr.equals("")){
 			command[6] = (byte) 0x01;
 			command[7] = (byte) 0x00;
@@ -436,8 +521,10 @@ public class Collector extends JDialog {
 			command[12] = (byte) 0x00;
 		}else{
 			if(raddr.length() != 12 || !raddr.matches("[0-9fF]*")){
-				JOptionPane.showMessageDialog(panel_1, "采集器地址错误！");
-				return;
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "采集器地址错误！");
+				}
+				return false;
 			}
 			//cjqaddr
 			byte[] caddr = StringUtil.string2Byte(raddr);
@@ -473,23 +560,68 @@ public class Collector extends JDialog {
 			if(response == null){
 				//超时
 				System.out.println("超时");
-				JOptionPane.showMessageDialog(panel_1, "超时");
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
 					byte st = response[14];
 					if((st & 0x03) == 0x02){
 						//open 
-						JOptionPane.showMessageDialog(panel_1, "关");
+						if(show == 1){
+							JOptionPane.showMessageDialog(panel_1, "关");
+						}
+						return true;
 					}
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return false;
 	}
 	
-	public void readMeter(){
+	public void readMeters(String path){
+		InputStream input = null;
+		FileOutputStream out = null;
+		HSSFWorkbook wb = null;
+		Sheet sheet = null;
+		try {
+			input = new FileInputStream(path);
+			wb = new HSSFWorkbook(input);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		sheet = wb.getSheetAt(0);
+		Row row = sheet.getRow(0);
+		String cjqaddr = getCellString(row,0);
+		int count = Integer.parseInt(getCellString(row, 1));
+		
+		String result = "";
+		if(openCJQ(cjqaddr,0)){
+			for(int i = 1;i < count+1;i++){
+				row = sheet.getRow(i);
+				String meteraddr = getCellString(row, 0);
+				result = readMeter(meteraddr,0);
+				row.createCell(1).setCellValue(result);
+			}
+			
+			closeCJQ(cjqaddr,0);
+			
+			try {
+				out = new FileOutputStream(path);
+				wb.write(out);
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	public String readMeter(String meteraddr,int show){
 		byte[] command = new byte[20];
 		
 		command[0] = (byte) 0xFE;
@@ -500,23 +632,28 @@ public class Collector extends JDialog {
 		command[4] = 0x68;
 		command[5] = 0x10;
 		//addr
-		String raddr = txt_meteraddr.getText();
-		if(raddr.equals("")){
-			command[6] = (byte) 0xAA;
-			command[7] = (byte) 0xAA;
-			command[8] = (byte) 0xAA;
-			command[9] = (byte) 0xAA;
-			command[10] = (byte) 0xAA;
-			command[11] = (byte) 0xAA;
-			command[12] = (byte) 0xAA;
+		if(meteraddr.equals("")){
+			if(show == 1){
+				JOptionPane.showMessageDialog(panel_1, "表地址不能为空！");
+			}
+			return "表地址不能为空！";
+//			command[6] = (byte) 0xAA;
+//			command[7] = (byte) 0xAA;
+//			command[8] = (byte) 0xAA;
+//			command[9] = (byte) 0xAA;
+//			command[10] = (byte) 0xAA;
+//			command[11] = (byte) 0xAA;
+//			command[12] = (byte) 0xAA;
 		}else{
 			
-			if(raddr.length() != 14 || !raddr.matches("[0-9]*")){
-				JOptionPane.showMessageDialog(panel_1, "表地址错误！");
-				return;
+			if(meteraddr.length() != 14 || !meteraddr.matches("[0-9]*")){
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
+				}
+				return "表地址错误！";
 			}
 			//meteraddr
-			byte[] maddr = StringUtil.string2Byte(raddr);
+			byte[] maddr = StringUtil.string2Byte(meteraddr);
 			for(int i = 0;i < 7;i++){
 				command[6+i] = maddr[6-i];
 			}
@@ -547,7 +684,10 @@ public class Collector extends JDialog {
 			if(response == null){
 				//超时
 				System.out.println("超时");
-				JOptionPane.showMessageDialog(panel_1, "超时");
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}
+				return "超时";
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
@@ -559,26 +699,73 @@ public class Collector extends JDialog {
 					String vstatus = "";
 					if((st0 & 0x03) == 0x00){
 						//open 
-						vstatus = "阀门开";
+						vstatus = "开";
 					}
 					if((st0 & 0x03) == 0x01 || (st0 & 0x03) == 0x02){
 						//
-						vstatus = "阀门关";
+						vstatus = "关";
 					}
 					if((st0 & 0x03) == 0x03){
 						//open 
 						vstatus = "阀门异常";
 					}
-					
-					JOptionPane.showMessageDialog(panel_1, Integer.toHexString(meterread) +"    "+ vstatus);
+					if(show == 1){
+						JOptionPane.showMessageDialog(panel_1, Integer.toHexString(meterread) +"  "+ vstatus);
+					}
+					return Integer.toHexString(meterread) +"  "+ vstatus;
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return "异常";
 	}
 	
-	protected void openValve() {
+	public void openValves(String path){
+		InputStream input = null;
+		FileOutputStream out = null;
+		HSSFWorkbook wb = null;
+		Sheet sheet = null;
+		try {
+			input = new FileInputStream(path);
+			wb = new HSSFWorkbook(input);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		sheet = wb.getSheetAt(0);
+		Row row = sheet.getRow(0);
+		String cjqaddr = getCellString(row,0);
+		int count = Integer.parseInt(getCellString(row, 1));
+		
+		String result = "";
+		if(openCJQ(cjqaddr,0)){
+			for(int i = 1;i < count+1;i++){
+				row = sheet.getRow(i);
+				String meteraddr = getCellString(row, 0);
+				result = openValve(meteraddr,0);
+				row.createCell(1).setCellValue(result);
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			closeCJQ(cjqaddr,0);
+			
+			try {
+				out = new FileOutputStream(path);
+				wb.write(out);
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	protected String openValve(String raddr,int show) {
 		//national
 		byte[] command = new byte[21];
 		
@@ -590,19 +777,24 @@ public class Collector extends JDialog {
 		command[4] = (byte)0x68;
 		command[5] = (byte)0x10;
 		//addr
-		String raddr = txt_meteraddr.getText();
 		if(raddr.equals("")){
-			command[6] = (byte) 0xAA;
-			command[7] = (byte) 0xAA;
-			command[8] = (byte) 0xAA;
-			command[9] = (byte) 0xAA;
-			command[10] = (byte) 0xAA;
-			command[11] = (byte) 0xAA;
-			command[12] = (byte) 0xAA;
+			if(show == 1){
+				JOptionPane.showMessageDialog(panel_1, "表地址不能为空！");
+			}
+			return "表地址不能为空！";
+//			command[6] = (byte) 0xAA;
+//			command[7] = (byte) 0xAA;
+//			command[8] = (byte) 0xAA;
+//			command[9] = (byte) 0xAA;
+//			command[10] = (byte) 0xAA;
+//			command[11] = (byte) 0xAA;
+//			command[12] = (byte) 0xAA;
 		}else{
 			if(raddr.length() != 14 || !raddr.matches("[0-9]*")){
-				JOptionPane.showMessageDialog(panel_1, "表地址错误！");
-				return;
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
+				}
+				return "表地址错误！";
 			}
 			//meteraddr
 			byte[] maddr = StringUtil.string2Byte(raddr);
@@ -632,29 +824,78 @@ public class Collector extends JDialog {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(command);
-			byte[] response = (byte[]) SerialReader.queue_in.poll(20, TimeUnit.SECONDS);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(15, TimeUnit.SECONDS);
 			
 			if(response == null){
 				//超时
 				System.out.println("超时");
-				JOptionPane.showMessageDialog(panel_1, "超时");
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
 					byte st = response[14];
 					if((st & 0x03) == 0x00){
 						//open 
-						JOptionPane.showMessageDialog(panel_1, "开");
+						if(show == 1){
+							JOptionPane.showMessageDialog(panel_1, "开");
+						}
+						return "开";
 					}
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return "异常";
+	}
+	
+	public void closeValves(String path){
+		InputStream input = null;
+		FileOutputStream out = null;
+		HSSFWorkbook wb = null;
+		Sheet sheet = null;
+		try {
+			input = new FileInputStream(path);
+			wb = new HSSFWorkbook(input);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		sheet = wb.getSheetAt(0);
+		Row row = sheet.getRow(0);
+		String cjqaddr = getCellString(row,0);
+		int count = Integer.parseInt(getCellString(row, 1));
+		
+		String result = "";
+		if(openCJQ(cjqaddr,0)){
+			for(int i = 1;i < count+1;i++){
+				row = sheet.getRow(i);
+				String meteraddr = getCellString(row, 0);
+				result = closeValve(meteraddr,0);
+				row.createCell(1).setCellValue(result);
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			closeCJQ(cjqaddr,0);
+			
+			try {
+				out = new FileOutputStream(path);
+				wb.write(out);
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		
 	}
 	
-	protected void closeValve() {
+	protected String closeValve(String raddr,int show) {
 		//national
 		byte[] command = new byte[21];
 		
@@ -666,19 +907,24 @@ public class Collector extends JDialog {
 		command[4] = (byte)0x68;
 		command[5] = (byte)0x10;
 		//addr
-		String raddr = txt_meteraddr.getText();
 		if(raddr.equals("")){
-			command[6] = (byte) 0xAA;
-			command[7] = (byte) 0xAA;
-			command[8] = (byte) 0xAA;
-			command[9] = (byte) 0xAA;
-			command[10] = (byte) 0xAA;
-			command[11] = (byte) 0xAA;
-			command[12] = (byte) 0xAA;
+			if(show == 1){
+				JOptionPane.showMessageDialog(panel_1, "表地址不能为空！");
+			}
+			return "表地址不能为空！";
+//			command[6] = (byte) 0xAA;
+//			command[7] = (byte) 0xAA;
+//			command[8] = (byte) 0xAA;
+//			command[9] = (byte) 0xAA;
+//			command[10] = (byte) 0xAA;
+//			command[11] = (byte) 0xAA;
+//			command[12] = (byte) 0xAA;
 		}else{
 			if(raddr.length() != 14 || !raddr.matches("[0-9]*")){
-				JOptionPane.showMessageDialog(panel_1, "表地址错误！");
-				return;
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
+				}
+				return "表地址错误！";
 			}
 			//meteraddr
 			byte[] maddr = StringUtil.string2Byte(raddr);
@@ -708,26 +954,31 @@ public class Collector extends JDialog {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(command);
-			byte[] response = (byte[]) SerialReader.queue_in.poll(20, TimeUnit.SECONDS);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(15, TimeUnit.SECONDS);
 			
 			if(response == null){
 				//超时
 				System.out.println("超时");
-				JOptionPane.showMessageDialog(panel_1, "超时");
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "超时");
+				}
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
 					byte st = response[14];
 					if((st & 0x03) == 0x01){
 						//close
-						JOptionPane.showMessageDialog(panel_1, "关");
+						if(show == 1){
+							JOptionPane.showMessageDialog(panel_1, "关");
+						}
+						return "关";
 					}
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		return "异常";
 	}
 	
 	public void write188Addr(){
@@ -1060,5 +1311,26 @@ public class Collector extends JDialog {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+	}
+	public String getCellString(Row row,int s){
+		String str = "";
+		Cell cell = row.getCell(s);
+		if(cell != null){
+			switch (cell.getCellType()){
+			case Cell.CELL_TYPE_STRING:
+				str = cell.getStringCellValue();
+				break;
+			case Cell.CELL_TYPE_NUMERIC:
+				str = String.valueOf((long)cell.getNumericCellValue());
+				break;
+			case Cell.CELL_TYPE_FORMULA:
+				str = cell.getStringCellValue();
+				break;
+				default:
+				str = cell.getStringCellValue();
+				break;
+			}
+		}
+		return str;
 	}
 }

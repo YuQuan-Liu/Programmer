@@ -91,6 +91,12 @@ public class MainWindow {
 						serialPort.setSerialPortParams(Property.getIntValue("MeterBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
 						in = serialPort.getInputStream();
 						out = serialPort.getOutputStream();
+						if(reader != null){
+							reader.interrupt();
+						}
+						if(writer != null){
+							writer.interrupt();
+						}
 						reader = new Thread(new SerialReader(in));
 						writer = new Thread(new SerialWriter(out));
 						reader.start();
@@ -120,6 +126,12 @@ public class MainWindow {
 						serialPort.setSerialPortParams(Property.getIntValue("CollectorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
 						in = serialPort.getInputStream();
 						out = serialPort.getOutputStream();
+						if(reader != null){
+							reader.interrupt();
+						}
+						if(writer != null){
+							writer.interrupt();
+						}
 						reader = new Thread(new SerialReader(in));
 						writer = new Thread(new SerialWriter(out));
 						reader.start();
@@ -148,6 +160,12 @@ public class MainWindow {
 						serialPort.setSerialPortParams(Property.getIntValue("ConcentratorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
 						in = serialPort.getInputStream();
 						out = serialPort.getOutputStream();
+						if(reader != null){
+							reader.interrupt();
+						}
+						if(writer != null){
+							writer.interrupt();
+						}
 						reader = new Thread(new SerialReader(in));
 						writer = new Thread(new SerialWriter(out));
 						reader.start();
