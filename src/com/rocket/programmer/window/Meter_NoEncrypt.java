@@ -607,13 +607,54 @@ public class Meter_NoEncrypt extends JDialog {
 				command[4] = (byte)0x68;
 				command[5] = (byte)0x10;
 				//addr
-				command[6] = (byte) 0xAA;
-				command[7] = (byte) 0xAA;
-				command[8] = (byte) 0xAA;
-				command[9] = (byte) 0xAA;
-				command[10] = (byte) 0xAA;
-				command[11] = (byte) 0xAA;
-				command[12] = (byte) 0xAA;
+//				command[6] = (byte) 0xAA;
+//				command[7] = (byte) 0xAA;
+//				command[8] = (byte) 0xAA;
+//				command[9] = (byte) 0xAA;
+//				command[10] = (byte) 0xAA;
+//				command[11] = (byte) 0xAA;
+//				command[12] = (byte) 0xAA;
+				
+				//addr
+				String raddr = readNumTextField.getText();
+				if(raddr.equals("")){
+					command[6] = (byte) 0xAA;
+					command[7] = (byte) 0xAA;
+					command[8] = (byte) 0xAA;
+					command[9] = (byte) 0xAA;
+					command[10] = (byte) 0xAA;
+					command[11] = (byte) 0xAA;
+					command[12] = (byte) 0xAA;
+				}else{
+					String[] addrs = raddr.split(" ");
+					if(addrs.length != 7){
+						JOptionPane.showMessageDialog(panel_1, "输入地址长度不对！");
+						return;
+					}else{
+						for(int i = 0;i < 7;i++){
+							try {
+								if(Integer.parseInt(addrs[i],16) >= 0 && Integer.parseInt(addrs[i],16) <= 255){
+									
+								}else{
+									JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
+									return;
+								}
+							} catch (NumberFormatException e) {
+								JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
+								e.printStackTrace();
+								return;
+							}
+						}
+					}
+					command[12] = (byte) Integer.parseInt(addrs[0],16);
+					command[11] = (byte) Integer.parseInt(addrs[1],16);
+					command[10] = (byte) Integer.parseInt(addrs[2],16);
+					command[9] = (byte) Integer.parseInt(addrs[3],16);
+					command[8] = (byte) Integer.parseInt(addrs[4],16);
+					command[7] = (byte) Integer.parseInt(addrs[5],16);
+					command[6] = (byte) Integer.parseInt(addrs[6],16);
+				}
+				
 				//control
 				command[13] = (byte) 0x04;
 				//length
@@ -670,13 +711,54 @@ public class Meter_NoEncrypt extends JDialog {
 		command[4] = (byte)0x68;
 		command[5] = (byte)0x10;
 		//addr
-		command[6] = (byte) 0xAA;
-		command[7] = (byte) 0xAA;
-		command[8] = (byte) 0xAA;
-		command[9] = (byte) 0xAA;
-		command[10] = (byte) 0xAA;
-		command[11] = (byte) 0xAA;
-		command[12] = (byte) 0xAA;
+//		command[6] = (byte) 0xAA;
+//		command[7] = (byte) 0xAA;
+//		command[8] = (byte) 0xAA;
+//		command[9] = (byte) 0xAA;
+//		command[10] = (byte) 0xAA;
+//		command[11] = (byte) 0xAA;
+//		command[12] = (byte) 0xAA;
+		
+		//addr
+		String raddr = readNumTextField.getText();
+		if(raddr.equals("")){
+			command[6] = (byte) 0xAA;
+			command[7] = (byte) 0xAA;
+			command[8] = (byte) 0xAA;
+			command[9] = (byte) 0xAA;
+			command[10] = (byte) 0xAA;
+			command[11] = (byte) 0xAA;
+			command[12] = (byte) 0xAA;
+		}else{
+			String[] addrs = raddr.split(" ");
+			if(addrs.length != 7){
+				JOptionPane.showMessageDialog(panel_1, "输入地址长度不对！");
+				return;
+			}else{
+				for(int i = 0;i < 7;i++){
+					try {
+						if(Integer.parseInt(addrs[i],16) >= 0 && Integer.parseInt(addrs[i],16) <= 255){
+							
+						}else{
+							JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
+							return;
+						}
+					} catch (NumberFormatException e) {
+						JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
+						e.printStackTrace();
+						return;
+					}
+				}
+			}
+			command[12] = (byte) Integer.parseInt(addrs[0],16);
+			command[11] = (byte) Integer.parseInt(addrs[1],16);
+			command[10] = (byte) Integer.parseInt(addrs[2],16);
+			command[9] = (byte) Integer.parseInt(addrs[3],16);
+			command[8] = (byte) Integer.parseInt(addrs[4],16);
+			command[7] = (byte) Integer.parseInt(addrs[5],16);
+			command[6] = (byte) Integer.parseInt(addrs[6],16);
+		}
+		
 		//control
 		command[13] = (byte) 0x04;
 		//length
