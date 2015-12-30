@@ -601,6 +601,7 @@ public class Concentrator extends JDialog {
 							txt_fileaddr.setText("导入文件："+f.getAbsolutePath());
 							//read the excel and add
 							addMeters(f.getAbsolutePath());
+							txt_fileaddr.setText("导入完成");
 						}
 						return null;
 					}
@@ -1094,6 +1095,7 @@ public class Concentrator extends JDialog {
 
 	protected void addMeters(String absolutePath) {
 		InputStream input = null;
+		FileOutputStream out = null;
 		HSSFWorkbook wb = null;
 		Sheet sheet = null;
 		try {
@@ -1110,16 +1112,24 @@ public class Concentrator extends JDialog {
 		
 
 		addCJQ(cjqaddr);
-		
+		String result = "";
 		for(int i = 1;i < count+1;i++){
 			row = sheet.getRow(i);
 			String meteraddr = getCellString(row, 0);
-			addMeter(cjqaddr,meteraddr,0);
+			result = addMeter(cjqaddr,meteraddr,0);
+			row.createCell(1).setCellValue(result);
+		}
+		try {
+			out = new FileOutputStream(absolutePath);
+			wb.write(out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		
 	}
 	
-	private void addMeter(String cjqaddr, String meteraddr,int show) {
+	private String addMeter(String cjqaddr, String meteraddr,int show) {
 		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
 		
 		byte[] framedata = new byte[18];
@@ -1146,14 +1156,14 @@ public class Concentrator extends JDialog {
 				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
 				(byte)0x06, gprsaddr, framedata);
 		
-		
+		String result = "";
 		try {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
-			String result = "";
+			
 			if(response == null){
 				//超时
 				System.out.println("超时");
@@ -1168,7 +1178,7 @@ public class Concentrator extends JDialog {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		
+		return result;
 	}
 
 	public String getCellString(Row row,int s){
