@@ -639,6 +639,11 @@ public class Collector extends JDialog {
 		
 	}
 	
+	/**
+	 * @param meteraddr
+	 * @param show
+	 * @return
+	 */
 	public String readMeter(String meteraddr,int show){
 		byte[] command = new byte[20];
 		
@@ -729,6 +734,8 @@ public class Collector extends JDialog {
 					}
 					if(show == 1){
 						JOptionPane.showMessageDialog(panel_1, Integer.toHexString(meterread) +"  "+ vstatus);
+					}else{
+						txt_show.setText(meteraddr +"  " + Integer.toHexString(meterread) +"  "+ vstatus);
 					}
 					return Integer.toHexString(meterread) +"  "+ vstatus;
 				}
@@ -861,6 +868,8 @@ public class Collector extends JDialog {
 						//open 
 						if(show == 1){
 							JOptionPane.showMessageDialog(panel_1, "开");
+						}else{
+							txt_show.setText(raddr+"  开");
 						}
 						return "开";
 					}
@@ -994,6 +1003,8 @@ public class Collector extends JDialog {
 						//close
 						if(show == 1){
 							JOptionPane.showMessageDialog(panel_1, "关");
+						}else{
+							txt_show.setText(raddr+"  关");
 						}
 						return "关";
 					}
