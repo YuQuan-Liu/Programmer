@@ -1072,7 +1072,7 @@ public class Concentrator extends JDialog {
 			int rowcount = 1;
 			
 			int timeout = 0;
-			while(!rcv_over && timeout < 40){
+			while(!rcv_over && timeout < 50){
 				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
 				if(response == null){
@@ -1096,11 +1096,61 @@ public class Concentrator extends JDialog {
 							maddrstr = maddrstr+String.format("%02x", maddrbytes[k]&0xFF)+" ";
 						}
 						String meterread = String.format("%02x", response[20+14*i+11]&0xFF)+String.format("%02x", response[20+14*i+10]&0xFF)+String.format("%02x", response[20+14*i+9]&0xFF);
-						System.out.println(maddrstr + ":"+meterread);
+						
+						byte st_l = response[20+14*i+12];
+						byte st_h = response[20+14*i+13];
+						
+						String readresult = "";
+						if(((st_l &0x40) ==0x40) || ((st_l &0x80)==0x80)){
+//							timeout
+//							0x40 ~ 表
+//							0x80 ~ 采集器
+							readresult = "超时";
+						}else{
+//							normal
+							if((st_h & 0x20) == 0x20){
+//								remark = "气泡";
+								readresult = "气泡";
+							}else{
+								if((st_h & 0x30) == 0x30){
+//									remark = "致命故障";
+									readresult = "致命故障";
+								}else{
+									if((st_h & 0x80) == 0x80){
+//										remark = "强光";
+										readresult = "强光";
+									}else{
+//										remark = "";
+										readresult = "";
+									}
+								}
+							}
+						}
+						String valvestatus = "";
+						switch (st_l &0x03) {
+						case 0x00:
+							valvestatus = "开"; //开
+							break;
+						case 0x01:
+							valvestatus = "关"; //关
+							break;
+						case 0x02:
+							valvestatus = "关"; //关
+							break;
+						case 0x03:
+							valvestatus = "异常"; //异常
+							break;
+						default:
+							break;
+						}
+						
+						System.out.println(maddrstr + ":"+meterread+":"+String.format("%02x", st_l&0xFF)+":"+String.format("%02x", st_h&0xFF));
 //						show = show + cjqaddrstr+"~"+maddrstr+"\r\n";
 						row = sheet.createRow(rowcount++);
 						row.createCell(0).setCellValue(maddrstr);
 						row.createCell(1).setCellValue(meterread);
+						row.createCell(2).setCellValue(readresult);
+						row.createCell(3).setCellValue(valvestatus);
 					}
 				}
 			}
@@ -1150,7 +1200,55 @@ public class Concentrator extends JDialog {
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				String meterread = String.format("%02x", response[31]&0xFF)+String.format("%02x", response[30]&0xFF)+String.format("%02x", response[29]&0xFF);
-				JOptionPane.showMessageDialog(panel_1, meteraddr+"读数："+meterread);
+				
+				byte st_l = response[32];
+				byte st_h = response[33];
+				
+				String readresult = "";
+				if(((st_l &0x40) ==0x40) || ((st_l &0x80)==0x80)){
+//					timeout
+//					0x40 ~ 表
+//					0x80 ~ 采集器
+					readresult = "超时";
+				}else{
+//					normal
+					if((st_h & 0x20) == 0x20){
+//						remark = "气泡";
+						readresult = "气泡";
+					}else{
+						if((st_h & 0x30) == 0x30){
+//							remark = "致命故障";
+							readresult = "致命故障";
+						}else{
+							if((st_h & 0x80) == 0x80){
+//								remark = "强光";
+								readresult = "强光";
+							}else{
+//								remark = "";
+								readresult = "正常";
+							}
+						}
+					}
+				}
+				String valvestatus = "";
+				switch (st_l &0x03) {
+				case 0x00:
+					valvestatus = "开"; //开
+					break;
+				case 0x01:
+					valvestatus = "关"; //关
+					break;
+				case 0x02:
+					valvestatus = "关"; //关
+					break;
+				case 0x03:
+					valvestatus = "异常"; //异常
+					break;
+				default:
+					break;
+				}
+				
+				JOptionPane.showMessageDialog(panel_1, meteraddr+"  读数："+meterread+"\r\n\r\n  表状态:"+readresult+"  阀门:"+valvestatus);
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -1232,13 +1330,15 @@ public class Concentrator extends JDialog {
 			if(response == null){
 				//超时
 				System.out.println("超时");
-				result = "超时";
+				result = meteraddr+"超时";
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				result = meteraddr+"表添加成功";
 			}
 			if(show == 1){
 				JOptionPane.showMessageDialog(panel_1, result);
+			}else{
+				txt_fileaddr.setText(result);
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
