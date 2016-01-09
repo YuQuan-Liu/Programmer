@@ -399,6 +399,24 @@ public class Collector extends JDialog {
 		btnExcel_2.setFont(new Font("宋体", Font.PLAIN, 14));
 		btnExcel_2.setBounds(359, 222, 117, 23);
 		panel_2.add(btnExcel_2);
+		
+		JButton btn_clean = new JButton("清洗");
+		btn_clean.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						String raddr = txt_meteraddr.getText();
+						cleanValve(raddr,1);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_clean.setFont(new Font("宋体", Font.PLAIN, 12));
+		btn_clean.setBounds(286, 151, 93, 23);
+		panel_2.add(btn_clean);
 	}
 	
 	public boolean openCJQ(String raddr,int show){
@@ -808,8 +826,10 @@ public class Collector extends JDialog {
 		//length
 		command[14] = (byte) 0x04;
 		//data
-		command[15] = (byte) 0x17;
-		command[16] = (byte) 0xA0;
+		command[16] = (byte) 0x17;
+		command[15] = (byte) 0xA0;
+//		command[15] = (byte) 0x17;
+//		command[16] = (byte) 0xA0;
 		//serial 
 		command[17] = (byte) 0x01;
 		//open valve
@@ -834,7 +854,8 @@ public class Collector extends JDialog {
 				}
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+//				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+				if(response[11] == (byte)0xA0 && response[12] == (byte)0x17){
 					byte st = response[14];
 					if((st & 0x03) == 0x00){
 						//open 
@@ -938,8 +959,10 @@ public class Collector extends JDialog {
 		//length
 		command[14] = (byte) 0x04;
 		//data
-		command[15] = (byte) 0x17;
-		command[16] = (byte) 0xA0;
+		command[16] = (byte) 0x17;
+		command[15] = (byte) 0xA0;
+//		command[15] = (byte) 0x17;
+//		command[16] = (byte) 0xA0;
 		//serial 
 		command[17] = (byte) 0x01;
 		//open valve
@@ -964,7 +987,8 @@ public class Collector extends JDialog {
 				}
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+//				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+				if(response[11] == (byte)0xA0 || response[12] == (byte)0x17){
 					byte st = response[14];
 					if((st & 0x03) == 0x01){
 						//close
@@ -975,6 +999,73 @@ public class Collector extends JDialog {
 					}
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "异常";
+	}
+	
+	protected String cleanValve(String raddr,int show) {
+		//national
+		byte[] command = new byte[21];
+		
+		command[0] = (byte) 0xFE;
+		command[1] = (byte) 0xFE;
+		command[2] = (byte) 0xFE;
+		command[3] = (byte) 0xFE;
+		
+		command[4] = (byte)0x68;
+		command[5] = (byte)0x10;
+		//addr
+		if(raddr.equals("")){
+			if(show == 1){
+				JOptionPane.showMessageDialog(panel_1, "表地址不能为空！");
+			}
+			return "表地址不能为空！";
+//			command[6] = (byte) 0xAA;
+//			command[7] = (byte) 0xAA;
+//			command[8] = (byte) 0xAA;
+//			command[9] = (byte) 0xAA;
+//			command[10] = (byte) 0xAA;
+//			command[11] = (byte) 0xAA;
+//			command[12] = (byte) 0xAA;
+		}else{
+			if(raddr.length() != 14 || !raddr.matches("[0-9]*")){
+				if(show == 1){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
+				}
+				return "表地址错误！";
+			}
+			//meteraddr
+			byte[] maddr = StringUtil.string2Byte(raddr);
+			for(int i = 0;i < 7;i++){
+				command[6+i] = maddr[6-i];
+			}
+		}
+		
+		//control
+		command[13] = (byte) 0x04;
+		//length
+		command[14] = (byte) 0x04;
+		//data
+		command[16] = (byte) 0x17;
+		command[15] = (byte) 0xA0;
+//		command[15] = (byte) 0x17;
+//		command[16] = (byte) 0xA0;
+		//serial 
+		command[17] = (byte) 0x01;
+		//open valve
+		command[18] = (byte) 0x72;
+		command[19] = 0x00;
+		for(int i = 4;i < 19;i++){
+			command[19] += command[i];
+		}
+		command[20] = (byte)0x16;
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(command);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

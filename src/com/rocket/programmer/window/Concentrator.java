@@ -588,6 +588,31 @@ public class Concentrator extends JDialog {
 		btn_cjq.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_cjq.setBounds(320, 112, 93, 23);
 		panel_3.add(btn_cjq);
+		
+		JButton btn_clean = new JButton("清洗");
+		btn_clean.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//meteraddr
+				final String meteraddr = txt_meteraddr.getText();
+				
+				if(meteraddr.length() != 14 || !meteraddr.matches("[0-9]*")){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
+					return;
+				}
+				
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						cleanValve(meteraddr);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_clean.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_clean.setBounds(320, 292, 93, 23);
+		panel_3.add(btn_clean);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new SwingWorker<Void, Void>(){
@@ -839,6 +864,46 @@ public class Concentrator extends JDialog {
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				JOptionPane.showMessageDialog(panel_1, "阀开");
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
+	protected void cleanValve(String meteraddr) {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[10];
+		framedata[0] = 0x10;
+		//meteraddr
+		byte[] maddr = StringUtil.string2Byte(meteraddr);
+		for(int i = 0;i < 7;i++){
+			framedata[1+i] = maddr[6-i];
+		}
+		
+		framedata[8] = (byte) 0x00;
+		framedata[9] = (byte) 0x00;
+		
+		Frame login = new Frame(10, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONTROL, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x04, gprsaddr, framedata);
+		
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "3s超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				JOptionPane.showMessageDialog(panel_1, "清洗开始");
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
