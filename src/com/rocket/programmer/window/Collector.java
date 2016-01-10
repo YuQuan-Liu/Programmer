@@ -17,6 +17,7 @@ import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 import javax.swing.SwingWorker;
 
+import com.rocket.obj.ReadResult;
 import com.rocket.serial.SerialReader;
 import com.rocket.serial.SerialWriter;
 import com.rocket.util.StringUtil;
@@ -617,13 +618,16 @@ public class Collector extends JDialog {
 		String cjqaddr = getCellString(row,0);
 		int count = Integer.parseInt(getCellString(row, 1));
 		
-		String result = "";
+		ReadResult result = null;
 		if(openCJQ(cjqaddr,0)){
 			for(int i = 1;i < count+1;i++){
 				row = sheet.getRow(i);
 				String meteraddr = getCellString(row, 0);
 				result = readMeter(meteraddr,0);
-				row.createCell(1).setCellValue(result);
+				row.createCell(1).setCellValue(result.getRead());
+				row.createCell(2).setCellValue(result.getMeterstatus());
+				row.createCell(3).setCellValue(result.getValvestatus());
+				row.createCell(4).setCellValue(result.getError());
 			}
 			
 			closeCJQ(cjqaddr,0);
@@ -644,8 +648,9 @@ public class Collector extends JDialog {
 	 * @param show
 	 * @return
 	 */
-	public String readMeter(String meteraddr,int show){
+	public ReadResult readMeter(String meteraddr,int show){
 		byte[] command = new byte[20];
+		ReadResult result = new ReadResult();
 		
 		command[0] = (byte) 0xFE;
 		command[1] = (byte) 0xFE;
@@ -659,7 +664,8 @@ public class Collector extends JDialog {
 			if(show == 1){
 				JOptionPane.showMessageDialog(panel_1, "表地址不能为空！");
 			}
-			return "表地址不能为空！";
+			result.setError("表地址不能为空！");
+			return result;
 //			command[6] = (byte) 0xAA;
 //			command[7] = (byte) 0xAA;
 //			command[8] = (byte) 0xAA;
@@ -673,7 +679,8 @@ public class Collector extends JDialog {
 				if(show == 1){
 					JOptionPane.showMessageDialog(panel_1, "表地址错误！");
 				}
-				return "表地址错误！";
+				result.setError("表地址错误！");
+				return result;
 			}
 			//meteraddr
 			byte[] maddr = StringUtil.string2Byte(meteraddr);
@@ -710,7 +717,8 @@ public class Collector extends JDialog {
 				if(show == 1){
 					JOptionPane.showMessageDialog(panel_1, "超时");
 				}
-				return "超时";
+				result.setError("超时");
+				return result;
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
@@ -718,32 +726,71 @@ public class Collector extends JDialog {
 					meterread = meterread << 8;
 					meterread = meterread | response[15]&0xFF;
 					
-					byte st0 = response[31];
-					String vstatus = "";
-					if((st0 & 0x03) == 0x00){
-						//open 
-						vstatus = "开";
-					}
-					if((st0 & 0x03) == 0x01 || (st0 & 0x03) == 0x02){
-						//
-						vstatus = "关";
-					}
-					if((st0 & 0x03) == 0x03){
-						//open 
-						vstatus = "阀门异常";
-					}
-					if(show == 1){
-						JOptionPane.showMessageDialog(panel_1, Integer.toHexString(meterread) +"  "+ vstatus);
+					byte st_l = response[31];
+					byte st_h = response[32];
+					
+					String readresult = "";
+					if(((st_l &0x40) ==0x40) || ((st_l &0x80)==0x80)){
+//						timeout
+//						0x40 ~ 表
+//						0x80 ~ 采集器
+						readresult = "超时";
 					}else{
-						txt_show.setText(meteraddr +"  " + Integer.toHexString(meterread) +"  "+ vstatus);
+//						normal
+						if((st_h & 0x20) == 0x20){
+//							remark = "气泡";
+							readresult = "气泡";
+						}else{
+							if((st_h & 0x30) == 0x30){
+//								remark = "致命故障";
+								readresult = "致命故障";
+							}else{
+								if((st_h & 0x80) == 0x80){
+//									remark = "强光";
+									readresult = "强光";
+								}else{
+//									remark = "";
+									readresult = "";
+								}
+							}
+						}
 					}
-					return Integer.toHexString(meterread) +"  "+ vstatus;
+					
+					String valvestatus = "";
+					switch (st_l &0x03) {
+					case 0x00:
+						valvestatus = "开"; //开
+						break;
+					case 0x01:
+						valvestatus = "关"; //关
+						break;
+					case 0x02:
+						valvestatus = "关"; //关
+						break;
+					case 0x03:
+						valvestatus = "异常"; //异常
+						break;
+					default:
+						break;
+					}
+					
+					if(show == 1){
+						JOptionPane.showMessageDialog(panel_1, meteraddr +" 读数:" + Integer.toHexString(meterread)+"\r\n\r\n 表状态:"+ readresult +" 阀门:"+ valvestatus);
+					}else{
+						txt_show.setText(meteraddr +" 读数:" + Integer.toHexString(meterread)+" 表状态:"+ readresult +" 阀门:"+ valvestatus);
+					}
+					result.setMeterstatus(readresult);
+					result.setRead(Integer.toHexString(meterread));
+					result.setValvestatus(valvestatus);
+					result.setError("");
+					return result;
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return "异常";
+		result.setError("异常");
+		return result;
 	}
 	
 	public void openValves(String path){
