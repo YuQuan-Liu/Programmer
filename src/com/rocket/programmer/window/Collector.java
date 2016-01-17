@@ -1197,7 +1197,7 @@ public class Collector extends JDialog {
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				if(response[11] == (byte)0x18 && response[12] == (byte)0xA0){
 					String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
-					for(int i = 8;i > 1;i--){
+					for(int i = 7;i > 1;i--){
 						String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
 						if(pre0.length() == 1){
 							pre0 = "0"+pre0;
