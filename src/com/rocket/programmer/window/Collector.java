@@ -614,33 +614,49 @@ public class Collector extends JDialog {
 			return;
 		}
 		sheet = wb.getSheetAt(0);
-		Row row = sheet.getRow(0);
-		String cjqaddr = getCellString(row,0);
-		int count = Integer.parseInt(getCellString(row, 1));
+		Row row = null;
+//		String cjqaddr = getCellString(row,0);
+//		int count = Integer.parseInt(getCellString(row, 1));
 		
+		
+		int rows = sheet.getLastRowNum();
+		String cjqaddr_ = "";
 		ReadResult result = null;
-		if(openCJQ(cjqaddr,0)){
-			for(int i = 1;i < count+1;i++){
-				row = sheet.getRow(i);
-				String meteraddr = getCellString(row, 0);
-				result = readMeter(meteraddr,0);
-				row.createCell(1).setCellValue(result.getRead());
-				row.createCell(2).setCellValue(result.getMeterstatus());
-				row.createCell(3).setCellValue(result.getValvestatus());
-				row.createCell(4).setCellValue(result.getError());
+		for(int i = 0;i <= rows;i++){
+			row = sheet.getRow(i);
+			String cjqaddr = getCellString(row, 0);
+			String meteraddr = getCellString(row, 1);
+			if(cjqaddr.equals("") || meteraddr.equals("")){
+				row.createCell(6).setCellValue("地址为空!");
+				break;
 			}
-			
-			closeCJQ(cjqaddr,0);
-			
-			try {
-				out = new FileOutputStream(path);
-				wb.write(out);
-				out.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			if(!cjqaddr_.equals(cjqaddr)){
+				
+				
+				cjqaddr_ = cjqaddr;
+				if(!openCJQ(cjqaddr_, 0)){
+					//采集器没有打开  记录错误
+					row.createCell(6).setCellValue("采集器没有打开!");
+					break;
+				}
 			}
+			result = readMeter(meteraddr,0);
+			row.createCell(2).setCellValue(result.getRead());
+			row.createCell(3).setCellValue(result.getMeterstatus());
+			row.createCell(4).setCellValue(result.getValvestatus());
+			row.createCell(5).setCellValue(result.getError());
 		}
-		
+		if(!cjqaddr_.equals("")){
+			closeCJQ(cjqaddr_,0);
+		}
+		try {
+			out = new FileOutputStream(path);
+			wb.write(out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+				
 	}
 	
 	/**
@@ -806,33 +822,50 @@ public class Collector extends JDialog {
 			return;
 		}
 		sheet = wb.getSheetAt(0);
-		Row row = sheet.getRow(0);
-		String cjqaddr = getCellString(row,0);
-		int count = Integer.parseInt(getCellString(row, 1));
+		Row row = null;
+//		String cjqaddr = getCellString(row,0);
+//		int count = Integer.parseInt(getCellString(row, 1));
 		
+		int rows = sheet.getLastRowNum();
+		String cjqaddr_ = "";
 		String result = "";
-		if(openCJQ(cjqaddr,0)){
-			for(int i = 1;i < count+1;i++){
-				row = sheet.getRow(i);
-				String meteraddr = getCellString(row, 0);
-				result = openValve(meteraddr,0);
-				row.createCell(1).setCellValue(result);
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+		for(int i = 0;i <= rows;i++){
+			row = sheet.getRow(i);
+			String cjqaddr = getCellString(row, 0);
+			String meteraddr = getCellString(row, 1);
+			if(cjqaddr.equals("") || meteraddr.equals("")){
+				row.createCell(3).setCellValue("地址为空!");
+				break;
+			}
+			if(!cjqaddr_.equals(cjqaddr)){
+				
+				
+				cjqaddr_ = cjqaddr;
+				if(!openCJQ(cjqaddr_, 0)){
+					//采集器没有打开  记录错误
+					row.createCell(3).setCellValue("采集器没有打开!");
+					break;
 				}
 			}
 			
-			closeCJQ(cjqaddr,0);
-			
+			result = openValve(meteraddr,0);
+			row.createCell(2).setCellValue(result);
 			try {
-				out = new FileOutputStream(path);
-				wb.write(out);
-				out.close();
-			} catch (IOException e) {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			
+		}
+		if(!cjqaddr_.equals("")){
+			closeCJQ(cjqaddr_,0);
+		}
+		try {
+			out = new FileOutputStream(path);
+			wb.write(out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		
 	}
@@ -941,35 +974,52 @@ public class Collector extends JDialog {
 			return;
 		}
 		sheet = wb.getSheetAt(0);
-		Row row = sheet.getRow(0);
-		String cjqaddr = getCellString(row,0);
-		int count = Integer.parseInt(getCellString(row, 1));
+		Row row = null;
+//		String cjqaddr = getCellString(row,0);
+//		int count = Integer.parseInt(getCellString(row, 1));
 		
+		
+		int rows = sheet.getLastRowNum();
+		String cjqaddr_ = "";
 		String result = "";
-		if(openCJQ(cjqaddr,0)){
-			for(int i = 1;i < count+1;i++){
-				row = sheet.getRow(i);
-				String meteraddr = getCellString(row, 0);
-				result = closeValve(meteraddr,0);
-				row.createCell(1).setCellValue(result);
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+		for(int i = 0;i <= rows;i++){
+			row = sheet.getRow(i);
+			String cjqaddr = getCellString(row, 0);
+			String meteraddr = getCellString(row, 1);
+			if(cjqaddr.equals("") || meteraddr.equals("")){
+				row.createCell(3).setCellValue("地址为空!");
+				break;
+			}
+			if(!cjqaddr_.equals(cjqaddr)){
+				
+				
+				cjqaddr_ = cjqaddr;
+				if(!openCJQ(cjqaddr_, 0)){
+					//采集器没有打开  记录错误
+					row.createCell(3).setCellValue("采集器没有打开!");
+					break;
 				}
 			}
 			
-			closeCJQ(cjqaddr,0);
-			
+			result = closeValve(meteraddr,0);
+			row.createCell(2).setCellValue(result);
 			try {
-				out = new FileOutputStream(path);
-				wb.write(out);
-				out.close();
-			} catch (IOException e) {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			
 		}
-		
+		if(!cjqaddr_.equals("")){
+			closeCJQ(cjqaddr_,0);
+		}
+		try {
+			out = new FileOutputStream(path);
+			wb.write(out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	protected String closeValve(String raddr,int show) {
