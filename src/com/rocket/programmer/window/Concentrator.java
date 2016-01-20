@@ -68,7 +68,7 @@ public class Concentrator extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setTitle("集中器");
-		setBounds(100, 100, 829, 681);
+		setBounds(100, 100, 829, 739);
 		getContentPane().setLayout(null);
 		
 		
@@ -161,7 +161,7 @@ public class Concentrator extends JDialog {
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
 		panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\u8868", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(35, 187, 693, 423);
+		panel_3.setBounds(35, 187, 695, 488);
 		panel_1.add(panel_3);
 		
 		JButton btn_meteradd = new JButton("添加");
@@ -280,7 +280,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_readsingle.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_readsingle.setBounds(26, 246, 93, 23);
+		btn_readsingle.setBounds(26, 206, 93, 23);
 		panel_3.add(btn_readsingle);
 		
 		JButton btn_readall = new JButton("抄全部表");
@@ -297,7 +297,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_readall.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_readall.setBounds(173, 246, 93, 23);
+		btn_readall.setBounds(173, 206, 93, 23);
 		panel_3.add(btn_readall);
 		
 		JButton btn_mbus = new JButton("表MBUS");
@@ -354,60 +354,6 @@ public class Concentrator extends JDialog {
 		btn_queryslave.setBounds(450, 112, 125, 23);
 		panel_3.add(btn_queryslave);
 		
-		JButton btn_test = new JButton("测试");
-		btn_test.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				new SwingWorker<Void, Void>(){
-
-					@Override
-					protected Void doInBackground() throws Exception {
-						modifytest((byte) 0xFF);
-						return null;
-					}
-				}.execute();
-			}
-		});
-		btn_test.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_test.setBounds(26, 159, 93, 23);
-		panel_3.add(btn_test);
-		
-		JButton btn_out = new JButton("出厂");
-		btn_out.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				new SwingWorker<Void, Void>(){
-
-					@Override
-					protected Void doInBackground() throws Exception {
-						modifytest((byte) 0x00);
-						return null;
-					}
-				}.execute();
-			}
-		});
-		btn_out.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_out.setBounds(173, 159, 93, 23);
-		panel_3.add(btn_out);
-		
-		JButton btn_querytest = new JButton("查询出厂");
-		btn_querytest.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				new SwingWorker<Void, Void>(){
-
-					@Override
-					protected Void doInBackground() throws Exception {
-						readTest();
-						return null;
-					}
-				}.execute();
-			}
-		});
-		btn_querytest.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_querytest.setBounds(320, 159, 125, 23);
-		panel_3.add(btn_querytest);
-		
 		JButton btnDI0 = new JButton("DI0在前");
 		btnDI0.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -423,7 +369,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btnDI0.setFont(new Font("宋体", Font.PLAIN, 14));
-		btnDI0.setBounds(26, 201, 93, 23);
+		btnDI0.setBounds(26, 161, 93, 23);
 		panel_3.add(btnDI0);
 		
 		JButton btnDI1 = new JButton("DI1在前");
@@ -441,7 +387,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btnDI1.setFont(new Font("宋体", Font.PLAIN, 14));
-		btnDI1.setBounds(173, 201, 93, 23);
+		btnDI1.setBounds(173, 161, 93, 23);
 		panel_3.add(btnDI1);
 		
 		JButton btn_queryDI = new JButton("查询顺序");
@@ -459,7 +405,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_queryDI.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_queryDI.setBounds(320, 201, 125, 23);
+		btn_queryDI.setBounds(320, 161, 125, 23);
 		panel_3.add(btn_queryDI);
 		
 		JButton btn_Open = new JButton("开阀");
@@ -484,7 +430,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_Open.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_Open.setBounds(26, 292, 93, 23);
+		btn_Open.setBounds(26, 252, 93, 23);
 		panel_3.add(btn_Open);
 		
 		JButton btn_Close = new JButton("关阀");
@@ -509,33 +455,33 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_Close.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_Close.setBounds(173, 292, 93, 23);
+		btn_Close.setBounds(173, 252, 93, 23);
 		panel_3.add(btn_Close);
 		
 		JLabel lblIp = new JLabel("IP：");
 		lblIp.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblIp.setFont(new Font("宋体", Font.PLAIN, 14));
-		lblIp.setBounds(301, 341, 46, 15);
+		lblIp.setBounds(301, 301, 46, 15);
 		panel_3.add(lblIp);
 		
 		txt_Port = new JTextField();
 		txt_Port.setToolTipText("");
 		txt_Port.setFont(new Font("宋体", Font.PLAIN, 14));
 		txt_Port.setColumns(10);
-		txt_Port.setBounds(585, 335, 86, 27);
+		txt_Port.setBounds(585, 295, 86, 27);
 		panel_3.add(txt_Port);
 		
 		JLabel label_3 = new JLabel("端口：");
 		label_3.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_3.setFont(new Font("宋体", Font.PLAIN, 14));
-		label_3.setBounds(514, 341, 61, 15);
+		label_3.setBounds(514, 301, 61, 15);
 		panel_3.add(label_3);
 		
 		txt_IP = new JTextField();
 		txt_IP.setToolTipText("");
 		txt_IP.setFont(new Font("宋体", Font.PLAIN, 14));
 		txt_IP.setColumns(10);
-		txt_IP.setBounds(356, 335, 150, 27);
+		txt_IP.setBounds(356, 295, 150, 27);
 		panel_3.add(txt_IP);
 		
 		JButton btn_IP = new JButton("设置IP");
@@ -552,7 +498,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_IP.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_IP.setBounds(26, 335, 93, 23);
+		btn_IP.setBounds(26, 295, 93, 23);
 		panel_3.add(btn_IP);
 		
 		JButton btn_queryIP = new JButton("查看IP");
@@ -569,7 +515,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_queryIP.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_queryIP.setBounds(173, 337, 93, 23);
+		btn_queryIP.setBounds(173, 297, 93, 23);
 		panel_3.add(btn_queryIP);
 		
 		JButton btn_cjq = new JButton("采集器");
@@ -611,8 +557,42 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_clean.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_clean.setBounds(320, 292, 93, 23);
+		btn_clean.setBounds(320, 252, 93, 23);
 		panel_3.add(btn_clean);
+		
+		JButton btn_erase = new JButton("清空数据");
+		btn_erase.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						eraseFlash();
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_erase.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_erase.setBounds(26, 341, 93, 23);
+		panel_3.add(btn_erase);
+		
+		JButton btn_restart = new JButton("重启");
+		btn_restart.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						restart();
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_restart.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_restart.setBounds(173, 341, 93, 23);
+		panel_3.add(btn_restart);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new SwingWorker<Void, Void>(){
@@ -910,6 +890,66 @@ public class Concentrator extends JDialog {
 		}
 		
 	}
+	
+	protected void eraseFlash() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[1];
+		framedata[0]=(byte) 0xFF;
+		
+		Frame login = new Frame(1, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x0F, gprsaddr, framedata);
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				JOptionPane.showMessageDialog(panel_1, "清空数据中，集中器将重启");
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
+	protected void restart() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[1];
+		framedata[0]=(byte) 0xFF;
+		
+		Frame login = new Frame(1, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x10, gprsaddr, framedata);
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				JOptionPane.showMessageDialog(panel_1, "集中器将重启");
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
 
 	//seq~0xFF~DI0在前（默认）   seq~0xAA~DI1在前（千宝通）   
 	protected void modifyDISeq(byte seq) {
@@ -965,68 +1005,6 @@ public class Concentrator extends JDialog {
 				}
 				if(response[15] == (byte)0xFF){
 					JOptionPane.showMessageDialog(panel_1, "DI0在前");
-				}
-			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-	}
-
-	protected void modifytest(byte test) {
-		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
-		
-		byte[] framedata = new byte[1];
-		framedata[0]=test;
-		
-		Frame login = new Frame(1, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
-				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
-				(byte)0x0D, gprsaddr, framedata);
-		
-		try {
-			SerialWriter.queue_out.clear();
-			SerialReader.queue_in.clear();
-			SerialWriter.queue_out.put(login.getFrame());
-			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
-			
-			if(response == null){
-				//超时
-				System.out.println("超时");
-				JOptionPane.showMessageDialog(panel_1, "超时");
-			}else{
-				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				readTest();
-			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-	}
-
-	private void readTest() {
-		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
-		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
-				Frame.AFN_QUERY, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
-				(byte)0x0D, gprsaddr, new byte[0]);
-		
-		
-		try {
-			SerialWriter.queue_out.clear();
-			SerialReader.queue_in.clear();
-			SerialWriter.queue_out.put(login.getFrame());
-			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
-			
-			if(response == null){
-				//超时
-				System.out.println("超时");
-				JOptionPane.showMessageDialog(panel_1, "超时");
-			}else{
-				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				if(response[15] == (byte)0x00){
-					JOptionPane.showMessageDialog(panel_1, "出厂");
-				}
-				if(response[15] == (byte)0xFF){
-					JOptionPane.showMessageDialog(panel_1, "测试");
 				}
 			}
 		} catch (Exception e1) {
