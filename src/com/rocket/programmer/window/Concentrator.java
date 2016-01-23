@@ -33,6 +33,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import com.rocket.obj.Frame;
+import com.rocket.obj.ReadResult;
 import com.rocket.serial.SerialReader;
 import com.rocket.serial.SerialWriter;
 import com.rocket.util.StringUtil;
@@ -1247,19 +1248,28 @@ public class Concentrator extends JDialog {
 			return;
 		}
 		sheet = wb.getSheetAt(0);
-		Row row = sheet.getRow(0);
-		String cjqaddr = getCellString(row,0);
-		int count = Integer.parseInt(getCellString(row, 1));
+		Row row = null;
 		
-
-		addCJQ(cjqaddr);
-		String result = "";
-		for(int i = 1;i < count+1;i++){
+		int rows = sheet.getLastRowNum();
+		String cjqaddr_ = "";
+		String result = null;
+		for(int i = 0;i <= rows;i++){
 			row = sheet.getRow(i);
-			String meteraddr = getCellString(row, 0);
-			result = addMeter(cjqaddr,meteraddr,0);
-			row.createCell(1).setCellValue(result);
+			String cjqaddr = getCellString(row, 0);
+			String meteraddr = getCellString(row, 1);
+			if(cjqaddr.equals("") || meteraddr.equals("")){
+				row.createCell(3).setCellValue("地址为空!");
+				break;
+			}
+			if(!cjqaddr_.equals(cjqaddr)){
+				
+				addCJQ(cjqaddr);
+				cjqaddr_ = cjqaddr;
+			}
+			result = addMeter(cjqaddr_,meteraddr,0);
+			row.createCell(2).setCellValue(result);
 		}
+		
 		try {
 			out = new FileOutputStream(absolutePath);
 			wb.write(out);
