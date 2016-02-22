@@ -11,15 +11,17 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 	
 	private JTextField showNumTextField;
 	private static boolean national = true;
+	private static boolean di1 = false;
 	
 	public ReadHalf(){
 		super();
 	}
 	
-	public ReadHalf(JTextField showNumTextField,boolean national){
+	public ReadHalf(JTextField showNumTextField,boolean national,boolean di1){
 		super();
 		this.showNumTextField = showNumTextField;
 		this.national = national;
+		this.di1 = di1;
 	}
 	@Override
 	protected Void doInBackground() throws Exception {
@@ -61,6 +63,10 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 		//data
 		command[15] = (byte) 0x1F;
 		command[16] = (byte) 0x90;
+		if(di1){
+			command[15] = (byte) 0x90;
+			command[16] = (byte) 0x1F;
+		}
 		//serial 
 		command[17] = (byte) 0x01;
 		
@@ -81,14 +87,26 @@ public class ReadHalf extends SwingWorker<Void, Void> {
 				System.out.println("超时");
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
-					int meterread = response[16]&0xFF;
-					meterread = meterread << 8;
-					meterread = meterread | response[15]&0xFF;
-					
-					String half = Integer.toHexString(response[22]&0xFF)+"-"+Integer.toHexString(response[21]&0xFF)+"-"+Integer.toHexString(response[20]&0xFF)+"-"+Integer.toHexString(response[19]&0xFF);
-					
-					showNumTextField.setText(Integer.toHexString(meterread) +"----"+ half);
+				if(di1){
+					if(response[12] == (byte)0x1F && response[11] == (byte)0x90){
+						int meterread = response[16]&0xFF;
+						meterread = meterread << 8;
+						meterread = meterread | response[15]&0xFF;
+						
+						String half = Integer.toHexString(response[22]&0xFF)+"-"+Integer.toHexString(response[21]&0xFF)+"-"+Integer.toHexString(response[20]&0xFF)+"-"+Integer.toHexString(response[19]&0xFF);
+						
+						showNumTextField.setText(Integer.toHexString(meterread) +"----"+ half);
+					}
+				}else{
+					if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
+						int meterread = response[16]&0xFF;
+						meterread = meterread << 8;
+						meterread = meterread | response[15]&0xFF;
+						
+						String half = Integer.toHexString(response[22]&0xFF)+"-"+Integer.toHexString(response[21]&0xFF)+"-"+Integer.toHexString(response[20]&0xFF)+"-"+Integer.toHexString(response[19]&0xFF);
+						
+						showNumTextField.setText(Integer.toHexString(meterread) +"----"+ half);
+					}
 				}
 			}
 		} catch (Exception e) {

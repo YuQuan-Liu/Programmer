@@ -9,7 +9,10 @@ import com.rocket.util.StringUtil;
 
 public class TestValve extends SwingWorker<Void, Void> {
 
-	public TestValve() {
+	private static boolean di1 = false;
+	
+	public TestValve(boolean di1) {
+		this.di1 = di1;
 	}
 
 	@Override
@@ -49,6 +52,10 @@ public class TestValve extends SwingWorker<Void, Void> {
 		//data
 		command[15] = (byte) 0x17;
 		command[16] = (byte) 0xA0;
+		if(di1){
+			command[15] = (byte) 0xA0;
+			command[16] = (byte) 0x17;
+		}
 		//serial 
 		command[17] = (byte) 0x01;
 		//open valve
@@ -103,6 +110,10 @@ public class TestValve extends SwingWorker<Void, Void> {
 		//data
 		command[15] = (byte) 0x17;
 		command[16] = (byte) 0xA0;
+		if(di1){
+			command[15] = (byte) 0xA0;
+			command[16] = (byte) 0x17;
+		}
 		//serial 
 		command[17] = (byte) 0x01;
 		//open valve

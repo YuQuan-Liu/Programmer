@@ -37,6 +37,7 @@ public class Meter_NoEncrypt extends JDialog {
 	private JTextField firstNumTextField;
 
 	final JCheckBox nationalCheckBox = new JCheckBox("国家推荐协议");
+	final JCheckBox di1Checkbox = new JCheckBox("DI1在前");
 	final JPanel panel = new JPanel();
 	final JLabel label = new JLabel("地址：");
 	final JLabel label_1 = new JLabel("读数：");
@@ -165,10 +166,10 @@ public class Meter_NoEncrypt extends JDialog {
 				if (readHalfBtn.getText().equalsIgnoreCase("读半位")) {
 					
 					if(readHalf == null){
-						readHalf = new ReadHalf(showNumTextField,nationalCheckBox.isSelected());
+						readHalf = new ReadHalf(showNumTextField,nationalCheckBox.isSelected(),di1Checkbox.isSelected());
 					}else{
 						readHalf.cancel(true);
-						readHalf = new ReadHalf(showNumTextField,nationalCheckBox.isSelected());
+						readHalf = new ReadHalf(showNumTextField,nationalCheckBox.isSelected(),di1Checkbox.isSelected());
 					}
 					readHalfBtn.setText("停止");
 					readHalf.execute();
@@ -311,10 +312,10 @@ public class Meter_NoEncrypt extends JDialog {
 				if (readMeterBtn.getText().equalsIgnoreCase("读表")) {
 					
 					if(readMeter == null){
-						readMeter = new ReadMeter(showNumTextField,nationalCheckBox.isSelected());
+						readMeter = new ReadMeter(showNumTextField,nationalCheckBox.isSelected(),di1Checkbox.isSelected());
 					}else{
 						readMeter.cancel(true);
-						readMeter = new ReadMeter(showNumTextField,nationalCheckBox.isSelected());
+						readMeter = new ReadMeter(showNumTextField,nationalCheckBox.isSelected(),di1Checkbox.isSelected());
 					}
 					readMeterBtn.setText("停止");
 					readMeter.execute();
@@ -369,10 +370,10 @@ public class Meter_NoEncrypt extends JDialog {
 				if (btn_testValve.getText().equalsIgnoreCase("循环测试")) {
 					
 					if(testValve == null){
-						testValve = new TestValve();
+						testValve = new TestValve(di1Checkbox.isSelected());
 					}else{
 						testValve.cancel(true);
-						testValve = new TestValve();
+						testValve = new TestValve(di1Checkbox.isSelected());
 					}
 					btn_testValve.setText("停止");
 					testValve.execute();
@@ -453,6 +454,11 @@ public class Meter_NoEncrypt extends JDialog {
 		nationalCheckBox.setFont(new Font("宋体", Font.PLAIN, 12));
 		nationalCheckBox.setBounds(6, 96, 103, 23);
 		getContentPane().add(nationalCheckBox);
+				di1Checkbox.setFont(new Font("宋体", Font.PLAIN, 12));
+				
+				
+				di1Checkbox.setBounds(136, 96, 103, 23);
+				getContentPane().add(di1Checkbox);
 				clearBtn.setBounds(512, 96, 93, 23);
 				getContentPane().add(clearBtn);
 		
@@ -662,6 +668,10 @@ public class Meter_NoEncrypt extends JDialog {
 				//data
 				command[15] = (byte) 0x17;
 				command[16] = (byte) 0xA0;
+				if(di1Checkbox.isSelected()){
+					command[15] = (byte) 0xA0;
+					command[16] = (byte) 0x17;
+				}
 				//serial 
 				command[17] = (byte) 0x01;
 				//open valve
@@ -684,13 +694,24 @@ public class Meter_NoEncrypt extends JDialog {
 						JOptionPane.showMessageDialog(panel_1, "超时");
 					}else{
 						System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-						if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
-							byte st = response[14];
-							if((st & 0x03) == 0x02){
-								//close 
-								JOptionPane.showMessageDialog(panel_1, "关");
+						if(di1Checkbox.isSelected()){
+							if(response[11] == (byte)0xA0 && response[12] == (byte)0x17){
+								byte st = response[14];
+								if((st & 0x03) == 0x02){
+									//close 
+									JOptionPane.showMessageDialog(panel_1, "关");
+								}
+							}
+						}else{
+							if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+								byte st = response[14];
+								if((st & 0x03) == 0x02){
+									//close 
+									JOptionPane.showMessageDialog(panel_1, "关");
+								}
 							}
 						}
+						
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -766,6 +787,10 @@ public class Meter_NoEncrypt extends JDialog {
 		//data
 		command[15] = (byte) 0x17;
 		command[16] = (byte) 0xA0;
+		if(di1Checkbox.isSelected()){
+			command[15] = (byte) 0xA0;
+			command[16] = (byte) 0x17;
+		}
 		//serial 
 		command[17] = (byte) 0x01;
 		//open valve
@@ -788,13 +813,24 @@ public class Meter_NoEncrypt extends JDialog {
 				JOptionPane.showMessageDialog(panel_1, "超时");
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
-					byte st = response[14];
-					if((st & 0x03) == 0x00){
-						//open 
-						JOptionPane.showMessageDialog(panel_1, "开");
+				if(di1Checkbox.isSelected()){
+					if(response[12] == (byte)0x17 && response[11] == (byte)0xA0){
+						byte st = response[14];
+						if((st & 0x03) == 0x00){
+							//open 
+							JOptionPane.showMessageDialog(panel_1, "开");
+						}
+					}
+				}else{
+					if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
+						byte st = response[14];
+						if((st & 0x03) == 0x00){
+							//open 
+							JOptionPane.showMessageDialog(panel_1, "开");
+						}
 					}
 				}
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -829,6 +865,10 @@ public class Meter_NoEncrypt extends JDialog {
 			//data
 			command[15] = (byte) 0x0A;
 			command[16] = (byte) 0x81;
+			if(di1Checkbox.isSelected()){
+				command[15] = (byte) 0x81;
+				command[16] = (byte) 0x0A;
+			}
 			//serial 
 			command[17] = (byte) 0x01;
 			command[18] = 0x00;
@@ -849,16 +889,30 @@ public class Meter_NoEncrypt extends JDialog {
 					JOptionPane.showMessageDialog(panel_1, "超时");
 				}else{
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-					if(response[11] == (byte)0x0A && response[12] == (byte)0x81){
-						String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
-						for(int i = 8;i > 1;i--){
-							String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
-							if(pre0.length() == 1){
-								pre0 = "0"+pre0;
+					if(di1Checkbox.isSelected()){
+						if(response[12] == (byte)0x0A && response[11] == (byte)0x81){
+							String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
+							for(int i = 8;i > 1;i--){
+								String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
+								if(pre0.length() == 1){
+									pre0 = "0"+pre0;
+								}
+								addr = addr + pre0 +" ";
 							}
-							addr = addr + pre0 +" ";
+							showAddrTextField.setText(addr);
 						}
-						showAddrTextField.setText(addr);
+					}else{
+						if(response[11] == (byte)0x0A && response[12] == (byte)0x81){
+							String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
+							for(int i = 8;i > 1;i--){
+								String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
+								if(pre0.length() == 1){
+									pre0 = "0"+pre0;
+								}
+								addr = addr + pre0 +" ";
+							}
+							showAddrTextField.setText(addr);
+						}
 					}
 				}
 								
@@ -964,6 +1018,10 @@ public class Meter_NoEncrypt extends JDialog {
 			//data
 			command[15] = (byte) 0x1F;
 			command[16] = (byte) 0x90;
+			if(di1Checkbox.isSelected()){
+				command[15] = (byte) 0x90;
+				command[16] = (byte) 0x1F;
+			}
 			//serial 
 			command[17] = (byte) 0x01;
 			
@@ -985,12 +1043,22 @@ public class Meter_NoEncrypt extends JDialog {
 					JOptionPane.showMessageDialog(panel_1, "超时");
 				}else{
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-					if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
-						int meterread = response[16]&0xFF;
-						meterread = meterread << 8;
-						meterread = meterread | response[15]&0xFF;
-						
-						showNumTextField.setText(Integer.toHexString(meterread));
+					if(di1Checkbox.isSelected()){
+						if(response[12] == (byte)0x1F && response[11] == (byte)0x90){
+							int meterread = response[16]&0xFF;
+							meterread = meterread << 8;
+							meterread = meterread | response[15]&0xFF;
+							
+							showNumTextField.setText(Integer.toHexString(meterread));
+						}
+					}else{
+						if(response[11] == (byte)0x1F && response[12] == (byte)0x90){
+							int meterread = response[16]&0xFF;
+							meterread = meterread << 8;
+							meterread = meterread | response[15]&0xFF;
+							
+							showNumTextField.setText(Integer.toHexString(meterread));
+						}
 					}
 				}
 			} catch (Exception e) {
@@ -1088,6 +1156,10 @@ public class Meter_NoEncrypt extends JDialog {
 			//data
 			command[15] = (byte) 0x18;
 			command[16] = (byte) 0xA0;
+			if(di1Checkbox.isSelected()){
+				command[15] = (byte) 0xA0;
+				command[16] = (byte) 0x18;
+			}
 			//serial 
 			command[17] = (byte) 0x01;
 			
@@ -1143,16 +1215,30 @@ public class Meter_NoEncrypt extends JDialog {
 					JOptionPane.showMessageDialog(panel_1, "超时");
 				}else{
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-					if(response[11] == (byte)0x18 && response[12] == (byte)0xA0){
-						String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
-						for(int i = 8;i > 1;i--){
-							String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
-							if(pre0.length() == 1){
-								pre0 = "0"+pre0;
+					if(di1Checkbox.isSelected()){
+						if(response[12] == (byte)0x18 && response[11] == (byte)0xA0){
+							String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
+							for(int i = 8;i > 1;i--){
+								String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
+								if(pre0.length() == 1){
+									pre0 = "0"+pre0;
+								}
+								addr = addr + pre0 +" ";
 							}
-							addr = addr + pre0 +" ";
+							showAddrTextField.setText(addr);
 						}
-						showAddrTextField.setText(addr);
+					}else{
+						if(response[11] == (byte)0x18 && response[12] == (byte)0xA0){
+							String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
+							for(int i = 8;i > 1;i--){
+								String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
+								if(pre0.length() == 1){
+									pre0 = "0"+pre0;
+								}
+								addr = addr + pre0 +" ";
+							}
+							showAddrTextField.setText(addr);
+						}
 					}
 				}
 			} catch (Exception e) {
@@ -1232,6 +1318,10 @@ public class Meter_NoEncrypt extends JDialog {
 			//data
 			command[15] = (byte) 0x16;
 			command[16] = (byte) 0xA0;
+			if(di1Checkbox.isSelected()){
+				command[15] = (byte) 0xA0;
+				command[16] = (byte) 0x16;
+			}
 			//serial 
 			command[17] = (byte) 0x01;
 			
@@ -1285,9 +1375,17 @@ public class Meter_NoEncrypt extends JDialog {
 					JOptionPane.showMessageDialog(panel_1, "超时");
 				}else{
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-					if(response[11] == (byte)0x16 && response[12] == (byte)0xA0){
-						if(response[14] == (byte)0x00 && response[15] == (byte)0x00){
-							JOptionPane.showMessageDialog(panel_1, "修改成功！");
+					if(di1Checkbox.isSelected()){
+						if(response[12] == (byte)0x16 && response[11] == (byte)0xA0){
+							if(response[14] == (byte)0x00 && response[15] == (byte)0x00){
+								JOptionPane.showMessageDialog(panel_1, "修改成功！");
+							}
+						}
+					}else{
+						if(response[11] == (byte)0x16 && response[12] == (byte)0xA0){
+							if(response[14] == (byte)0x00 && response[15] == (byte)0x00){
+								JOptionPane.showMessageDialog(panel_1, "修改成功！");
+							}
 						}
 					}
 				}
@@ -1526,6 +1624,10 @@ public class Meter_NoEncrypt extends JDialog {
 		//data
 		command[15] = (byte) 0x19;
 		command[16] = (byte) 0xA0;
+		if(di1Checkbox.isSelected()){
+			command[15] = (byte) 0xA0;
+			command[16] = (byte) 0x19;
+		}
 		//serial 
 		command[17] = (byte) 0x01;
 		
@@ -1547,9 +1649,16 @@ public class Meter_NoEncrypt extends JDialog {
 				JOptionPane.showMessageDialog(panel_1, "超时");
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				if(response[11] == (byte)0x19 && response[12] == (byte)0xA0 && response[9] == (byte)0x84){
-//					nationalCheckBox.setSelected(false);
-					JOptionPane.showMessageDialog(panel_1, "出厂设置成功！");
+				if(di1Checkbox.isSelected()){
+					if(response[12] == (byte)0x19 && response[11] == (byte)0xA0 && response[9] == (byte)0x84){
+//						nationalCheckBox.setSelected(false);
+						JOptionPane.showMessageDialog(panel_1, "出厂设置成功！");
+					}
+				}else{
+					if(response[11] == (byte)0x19 && response[12] == (byte)0xA0 && response[9] == (byte)0x84){
+//						nationalCheckBox.setSelected(false);
+						JOptionPane.showMessageDialog(panel_1, "出厂设置成功！");
+					}
 				}
 			}
 		} catch (Exception e) {
