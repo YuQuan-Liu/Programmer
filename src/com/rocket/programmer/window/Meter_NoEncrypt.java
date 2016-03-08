@@ -67,6 +67,7 @@ public class Meter_NoEncrypt extends JDialog {
 	private JTextField txtValveTimeout;
 	private final JButton btnReadValveTimeout = new JButton("读阀门超时");
 	private final JButton btnWriteValveTimeout = new JButton("写阀门超时");
+	private JTextField writeAddrResult_txtbox;
 	/**
 	 * Launch the application.
 	 */
@@ -126,7 +127,7 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.setBorder(new TitledBorder(null, "\u64CD\u4F5C",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel_1.setLayout(null);
-		panel_1.setBounds(10, 125, 606, 478);
+		panel_1.setBounds(10, 125, 606, 516);
 		getContentPane().add(panel_1);
 
 		readAddrBtn.addActionListener(new ActionListener() {
@@ -203,6 +204,14 @@ public class Meter_NoEncrypt extends JDialog {
 		panel_1.add(writeAddrBtn);
 
 		addrTextField = new JTextField();
+		addrTextField.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println(addrTextField.getText());
+				String raddr = addrTextField.getText();
+				writeAddr(raddr);
+				addrTextField.setText("");
+			}
+		});
 		addrTextField.setToolTipText("高～～～～～低");
 		addrTextField.setFont(new Font("宋体", Font.PLAIN, 12));
 		addrTextField.setColumns(10);
@@ -223,13 +232,13 @@ public class Meter_NoEncrypt extends JDialog {
 		});
 
 		writeFirstNumBtn.setFont(new Font("宋体", Font.PLAIN, 12));
-		writeFirstNumBtn.setBounds(47, 205, 93, 23);
+		writeFirstNumBtn.setBounds(47, 253, 93, 23);
 		panel_1.add(writeFirstNumBtn);
 
 		firstNumTextField = new JTextField();
 		firstNumTextField.setFont(new Font("宋体", Font.PLAIN, 12));
 		firstNumTextField.setColumns(10);
-		firstNumTextField.setBounds(185, 206, 218, 21);
+		firstNumTextField.setBounds(185, 254, 218, 21);
 		panel_1.add(firstNumTextField);
 		writeOutBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -246,7 +255,7 @@ public class Meter_NoEncrypt extends JDialog {
 
 		writeOutBtn.setEnabled(false);
 		writeOutBtn.setFont(new Font("宋体", Font.PLAIN, 12));
-		writeOutBtn.setBounds(46, 315, 93, 23);
+		writeOutBtn.setBounds(46, 363, 93, 23);
 		panel_1.add(writeOutBtn);
 
 		toNationalBtn.addActionListener(new ActionListener() {
@@ -262,7 +271,7 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 		});
 		toNationalBtn.setFont(new Font("宋体", Font.PLAIN, 12));
-		toNationalBtn.setBounds(46, 260, 93, 23);
+		toNationalBtn.setBounds(46, 308, 93, 23);
 		panel_1.add(toNationalBtn);
 		toSunBtn.setEnabled(false);
 
@@ -280,7 +289,7 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 		});
 		toSunBtn.setFont(new Font("宋体", Font.PLAIN, 12));
-		toSunBtn.setBounds(185, 260, 93, 23);
+		toSunBtn.setBounds(185, 308, 93, 23);
 		panel_1.add(toSunBtn);
 		
 		readNumTextField = new JTextField();
@@ -302,7 +311,7 @@ public class Meter_NoEncrypt extends JDialog {
 		});
 		writeIAPBtn.setEnabled(false);
 		writeIAPBtn.setFont(new Font("宋体", Font.PLAIN, 12));
-		writeIAPBtn.setBounds(185, 315, 93, 23);
+		writeIAPBtn.setBounds(185, 363, 93, 23);
 		
 		panel_1.add(writeIAPBtn);
 		
@@ -344,7 +353,7 @@ public class Meter_NoEncrypt extends JDialog {
 		});
 		btn_open.setEnabled(false);
 		btn_open.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_open.setBounds(46, 370, 93, 23);
+		btn_open.setBounds(46, 418, 93, 23);
 		panel_1.add(btn_open);
 		btn_close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -362,7 +371,7 @@ public class Meter_NoEncrypt extends JDialog {
 		
 		btn_close.setEnabled(false);
 		btn_close.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_close.setBounds(193, 370, 93, 23);
+		btn_close.setBounds(193, 418, 93, 23);
 		panel_1.add(btn_close);
 		btn_testValve.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -385,7 +394,7 @@ public class Meter_NoEncrypt extends JDialog {
 		});
 		btn_testValve.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_testValve.setEnabled(false);
-		btn_testValve.setBounds(324, 370, 93, 23);
+		btn_testValve.setBounds(324, 418, 93, 23);
 		
 		panel_1.add(btn_testValve);
 		
@@ -404,14 +413,14 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 		});
 		btnWriteValveTimeout.setFont(new Font("宋体", Font.PLAIN, 12));
-		btnWriteValveTimeout.setBounds(46, 418, 93, 23);
+		btnWriteValveTimeout.setBounds(46, 466, 93, 23);
 		panel_1.add(btnWriteValveTimeout);
 		
 		txtValveTimeout = new JTextField();
 		txtValveTimeout.setToolTipText("超时时间多少s");
 		txtValveTimeout.setFont(new Font("宋体", Font.PLAIN, 12));
 		txtValveTimeout.setColumns(10);
-		txtValveTimeout.setBounds(184, 419, 218, 21);
+		txtValveTimeout.setBounds(184, 467, 218, 21);
 		panel_1.add(txtValveTimeout);
 		btnReadValveTimeout.setEnabled(false);
 		btnReadValveTimeout.addActionListener(new ActionListener() {
@@ -420,9 +429,22 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 		});
 		btnReadValveTimeout.setFont(new Font("宋体", Font.PLAIN, 12));
-		btnReadValveTimeout.setBounds(436, 418, 93, 23);
+		btnReadValveTimeout.setBounds(436, 466, 93, 23);
 		
 		panel_1.add(btnReadValveTimeout);
+		
+		writeAddrResult_txtbox = new JTextField();
+		writeAddrResult_txtbox.setToolTipText("高～～～～～低");
+		writeAddrResult_txtbox.setFont(new Font("宋体", Font.PLAIN, 16));
+		writeAddrResult_txtbox.setColumns(10);
+		writeAddrResult_txtbox.setBounds(185, 191, 218, 41);
+		panel_1.add(writeAddrResult_txtbox);
+		
+		JLabel label_2 = new JLabel("扫码结果");
+		label_2.setHorizontalAlignment(SwingConstants.CENTER);
+		label_2.setFont(new Font("宋体", Font.PLAIN, 16));
+		label_2.setBounds(46, 202, 93, 18);
+		panel_1.add(label_2);
 
 		nationalCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
@@ -1127,6 +1149,129 @@ public class Meter_NoEncrypt extends JDialog {
 			}
 		}
 	}
+	
+	public void writeAddr(String raddr){
+		if (nationalCheckBox.isSelected()) {
+			// national
+			byte[] command = new byte[27];
+			
+			command[0] = (byte) 0xFE;
+			command[1] = (byte) 0xFE;
+			command[2] = (byte) 0xFE;
+			command[3] = (byte) 0xFE;
+			
+			command[4] = 0x68;
+			command[5] = 0x10;
+			//addr
+			command[6] = (byte) 0xAA;
+			command[7] = (byte) 0xAA;
+			command[8] = (byte) 0xAA;
+			command[9] = (byte) 0xAA;
+			command[10] = (byte) 0xAA;
+			command[11] = (byte) 0xAA;
+			command[12] = (byte) 0xAA;
+			
+			//control
+			command[13] = (byte) 0x15;
+			//length
+			command[14] = (byte) 0x0A;
+			//data
+			command[15] = (byte) 0x18;
+			command[16] = (byte) 0xA0;
+			if(di1Checkbox.isSelected()){
+				command[15] = (byte) 0xA0;
+				command[16] = (byte) 0x18;
+			}
+			//serial 
+			command[17] = (byte) 0x01;
+			
+			if(raddr.equals("")){
+				JOptionPane.showMessageDialog(panel_1, "输入地址为空！");
+				return;
+			}else{
+				String[] addrs=new String[7];
+				if(raddr.length()!=14){
+					JOptionPane.showMessageDialog(panel_1, "输入地址长度不对！");
+					return;
+				}else{
+					for(int i = 0;i < 7;i++){
+						addrs[i] = raddr.substring(i*2, 2+i*2);
+					}
+					for(int i = 0;i < 7;i++){
+						try {
+							if(Integer.parseInt(addrs[i],16) >= 0 && Integer.parseInt(addrs[i],16) <= 255){
+								
+							}else{
+								JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
+								return;
+							}
+						} catch (NumberFormatException e) {
+							JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
+							e.printStackTrace();
+							return;
+						}
+					}
+				}				
+				command[24] = (byte) Integer.parseInt(addrs[0],16);
+				command[23] = (byte) Integer.parseInt(addrs[1],16);
+				command[22] = (byte) Integer.parseInt(addrs[2],16);
+				command[21] = (byte) Integer.parseInt(addrs[3],16);
+				command[20] = (byte) Integer.parseInt(addrs[4],16);
+				command[19] = (byte) Integer.parseInt(addrs[5],16);
+				command[18] = (byte) Integer.parseInt(addrs[6],16);
+			}
+			
+			command[25] = 0x00;
+			for(int i = 4;i < 25;i++){
+				command[25] += command[i];
+			}
+			command[26] = 0x16;
+			
+			try {
+				System.out.println(StringUtil.byteArrayToHexStr(command, command.length));
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+				SerialWriter.queue_out.put(command);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+				
+				if(response == null){
+					//超时
+					writeAddrResult_txtbox.setText(raddr+"超时!!!");
+					System.out.println("超时");
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if(di1Checkbox.isSelected()){
+						if(response[12] == (byte)0x18 && response[11] == (byte)0xA0){
+							String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
+							for(int i = 8;i > 1;i--){
+								String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
+								if(pre0.length() == 1){
+									pre0 = "0"+pre0;
+								}
+								addr = addr + pre0 +" ";
+							}
+							showAddrTextField.setText(addr);
+						}
+					}else{
+						if(response[11] == (byte)0x18 && response[12] == (byte)0xA0){
+							String addr = "";//Integer.toHexString(re[8]&0xFF).toUpperCase()+" "+Integer.toHexString(re[7]&0xFF)+" "+Integer.toHexString(re[6]&0xFF)+" "+Integer.toHexString(re[5]&0xFF)+" "+Integer.toHexString(re[4]&0xFF)+" "+Integer.toHexString(re[3]&0xFF)+" "+Integer.toHexString(re[2]&0xFF);
+							for(int i = 8;i > 1;i--){
+								String pre0 = Integer.toHexString(response[i]&0xFF).toUpperCase();
+								if(pre0.length() == 1){
+									pre0 = "0"+pre0;
+								}
+								addr = addr + pre0 +" ";
+							}
+							showAddrTextField.setText(addr);
+						}
+					}
+					writeAddrResult_txtbox.setText(raddr+"完成");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	public void writeAddr() {
 		if (nationalCheckBox.isSelected()) {
@@ -1168,11 +1313,14 @@ public class Meter_NoEncrypt extends JDialog {
 				JOptionPane.showMessageDialog(panel_1, "输入地址为空！");
 				return;
 			}else{
-				String[] addrs = raddr.split(" ");
-				if(addrs.length != 7){
+				String[] addrs=new String[7];
+				if(raddr.length()!=14){
 					JOptionPane.showMessageDialog(panel_1, "输入地址长度不对！");
 					return;
 				}else{
+					for(int i = 0;i < 7;i++){
+						addrs[i] = raddr.substring(i*2, 2+i*2);
+					}
 					for(int i = 0;i < 7;i++){
 						try {
 							if(Integer.parseInt(addrs[i],16) >= 0 && Integer.parseInt(addrs[i],16) <= 255){
@@ -1204,6 +1352,7 @@ public class Meter_NoEncrypt extends JDialog {
 			command[26] = 0x16;
 			
 			try {
+				System.out.println(StringUtil.byteArrayToHexStr(command, command.length));
 				SerialWriter.queue_out.clear();
 				SerialReader.queue_in.clear();
 				SerialWriter.queue_out.put(command);
