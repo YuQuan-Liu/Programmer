@@ -78,7 +78,7 @@ public class MainWindow {
 			}
 		});
 		frmRocketprogrammer.setTitle("Rocket～Programmer");
-		frmRocketprogrammer.setBounds(100, 100, 500, 254);
+		frmRocketprogrammer.setBounds(100, 100, 500, 334);
 		frmRocketprogrammer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmRocketprogrammer.getContentPane().setLayout(null);
 		
@@ -222,5 +222,37 @@ public class MainWindow {
 		openBtn.setFont(new Font("宋体", Font.PLAIN, 14));
 		openBtn.setBounds(339, 45, 93, 23);
 		frmRocketprogrammer.getContentPane().add(openBtn);
+		
+		JButton button_3 = new JButton("老化188表");
+		button_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(serialPort != null){
+					try {
+						serialPort.setSerialPortParams(Property.getIntValue("CollectorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
+						in = serialPort.getInputStream();
+						out = serialPort.getOutputStream();
+						if(reader != null){
+							reader.interrupt();
+						}
+						if(writer != null){
+							writer.interrupt();
+						}
+						reader = new Thread(new SerialReader(in));
+						writer = new Thread(new SerialWriter(out));
+						reader.start();
+						writer.start();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					LaoHua188 lao = new LaoHua188();
+					lao.setVisible(true);
+				}else{
+					JOptionPane.showMessageDialog(frmRocketprogrammer, "先打开串口！");
+				}
+			}
+		});
+		button_3.setFont(new Font("宋体", Font.PLAIN, 12));
+		button_3.setBounds(51, 205, 93, 45);
+		frmRocketprogrammer.getContentPane().add(button_3);
 	}
 }
