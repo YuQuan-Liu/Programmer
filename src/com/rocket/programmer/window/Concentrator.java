@@ -74,7 +74,7 @@ public class Concentrator extends JDialog {
 		
 		
 		panel_1.setBorder(new TitledBorder(null, "\u64CD\u4F5C", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(10, 23, 803, 620);
+		panel_1.setBounds(10, 23, 803, 678);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -162,7 +162,7 @@ public class Concentrator extends JDialog {
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
 		panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\u8868", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(35, 187, 695, 488);
+		panel_3.setBounds(35, 187, 695, 481);
 		panel_1.add(panel_3);
 		
 		JButton btn_meteradd = new JButton("添加");
@@ -281,7 +281,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_readsingle.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_readsingle.setBounds(26, 271, 93, 23);
+		btn_readsingle.setBounds(26, 297, 93, 23);
 		panel_3.add(btn_readsingle);
 		
 		JButton btn_readall = new JButton("抄全部表");
@@ -298,7 +298,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_readall.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_readall.setBounds(173, 271, 93, 23);
+		btn_readall.setBounds(173, 297, 93, 23);
 		panel_3.add(btn_readall);
 		
 		JButton btn_mbus = new JButton("表MBUS");
@@ -431,7 +431,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_Open.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_Open.setBounds(26, 317, 93, 23);
+		btn_Open.setBounds(26, 343, 93, 23);
 		panel_3.add(btn_Open);
 		
 		JButton btn_Close = new JButton("关阀");
@@ -456,33 +456,33 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_Close.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_Close.setBounds(173, 317, 93, 23);
+		btn_Close.setBounds(173, 343, 93, 23);
 		panel_3.add(btn_Close);
 		
 		JLabel lblIp = new JLabel("IP：");
 		lblIp.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblIp.setFont(new Font("宋体", Font.PLAIN, 14));
-		lblIp.setBounds(301, 366, 46, 15);
+		lblIp.setBounds(301, 392, 46, 15);
 		panel_3.add(lblIp);
 		
 		txt_Port = new JTextField();
 		txt_Port.setToolTipText("");
 		txt_Port.setFont(new Font("宋体", Font.PLAIN, 14));
 		txt_Port.setColumns(10);
-		txt_Port.setBounds(585, 360, 86, 27);
+		txt_Port.setBounds(585, 386, 86, 27);
 		panel_3.add(txt_Port);
 		
 		JLabel label_3 = new JLabel("端口：");
 		label_3.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_3.setFont(new Font("宋体", Font.PLAIN, 14));
-		label_3.setBounds(514, 366, 61, 15);
+		label_3.setBounds(514, 392, 61, 15);
 		panel_3.add(label_3);
 		
 		txt_IP = new JTextField();
 		txt_IP.setToolTipText("");
 		txt_IP.setFont(new Font("宋体", Font.PLAIN, 14));
 		txt_IP.setColumns(10);
-		txt_IP.setBounds(356, 360, 150, 27);
+		txt_IP.setBounds(356, 386, 150, 27);
 		panel_3.add(txt_IP);
 		
 		JButton btn_IP = new JButton("设置IP");
@@ -499,7 +499,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_IP.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_IP.setBounds(26, 360, 93, 23);
+		btn_IP.setBounds(26, 386, 93, 23);
 		panel_3.add(btn_IP);
 		
 		JButton btn_queryIP = new JButton("查看IP");
@@ -516,7 +516,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_queryIP.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_queryIP.setBounds(173, 362, 93, 23);
+		btn_queryIP.setBounds(173, 388, 93, 23);
 		panel_3.add(btn_queryIP);
 		
 		JButton btn_cjq = new JButton("采集器");
@@ -558,7 +558,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_clean.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_clean.setBounds(320, 317, 93, 23);
+		btn_clean.setBounds(320, 343, 93, 23);
 		panel_3.add(btn_clean);
 		
 		JButton btn_erase = new JButton("清空数据");
@@ -575,7 +575,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_erase.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_erase.setBounds(26, 406, 93, 23);
+		btn_erase.setBounds(26, 432, 93, 23);
 		panel_3.add(btn_erase);
 		
 		JButton btn_restart = new JButton("重启");
@@ -592,7 +592,7 @@ public class Concentrator extends JDialog {
 			}
 		});
 		btn_restart.setFont(new Font("宋体", Font.PLAIN, 14));
-		btn_restart.setBounds(173, 406, 93, 23);
+		btn_restart.setBounds(173, 432, 93, 23);
 		panel_3.add(btn_restart);
 		
 		JButton btn_ack_action = new JButton("先应答");
@@ -645,6 +645,57 @@ public class Concentrator extends JDialog {
 		btn_queryactionack.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_queryactionack.setBounds(320, 211, 125, 23);
 		panel_3.add(btn_queryactionack);
+		
+		JButton btn_protocol_188 = new JButton("188表");
+		btn_protocol_188.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						modifyProtocol((byte)0xFF);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_protocol_188.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_protocol_188.setBounds(26, 252, 93, 23);
+		panel_3.add(btn_protocol_188);
+		
+		JButton btn_protocol_eg = new JButton("自主表");
+		btn_protocol_eg.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						modifyProtocol((byte)0x01);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_protocol_eg.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_protocol_eg.setBounds(173, 252, 93, 23);
+		panel_3.add(btn_protocol_eg);
+		
+		JButton btn_queryprotocol = new JButton("查询底层表类型");
+		btn_queryprotocol.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readProtocol();
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_queryprotocol.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_queryprotocol.setBounds(320, 252, 150, 23);
+		panel_3.add(btn_queryprotocol);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new SwingWorker<Void, Void>(){
@@ -1002,7 +1053,69 @@ public class Concentrator extends JDialog {
 		}
 		
 	}
-
+	
+	//协议类型 0xFF~188(Default)  1~EG 
+	protected void modifyProtocol(byte protocol) {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[1];
+		framedata[0]=protocol;
+		
+		Frame login = new Frame(1, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x12, gprsaddr, framedata);
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				readProtocol();
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	private void readProtocol() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_QUERY, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x12, gprsaddr, new byte[0]);
+		
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				if(response[15] == (byte)0x01){
+					JOptionPane.showMessageDialog(panel_1, "自主");
+				}
+				if(response[15] == (byte)0xFF){
+					JOptionPane.showMessageDialog(panel_1, "188");
+				}
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
 	//先应答后操作~0xaa    先操作后应答~0xff
 	protected void modifyACK_ACTION(byte seq) {
 		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
