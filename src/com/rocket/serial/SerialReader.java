@@ -23,6 +23,7 @@ public class SerialReader implements Runnable{
 		int len = -1;
 		
 		int start = 0;
+		int copyed = 0;
 		
 		byte[] buffer_re = new byte[512];  //接收到的所有的数据的buffer
 		int buffer_re_cnt = 0;     //接收到的字节个数
@@ -32,8 +33,8 @@ public class SerialReader implements Runnable{
 		try {
 			while(!Thread.interrupted()){
 				while((len = in.read(buffer)) > 0){
-//					System.out.println(len);
-//					System.out.println(StringUtil.byteArrayToHexStr(buffer, len));
+					System.out.println(len);
+					System.out.println(StringUtil.byteArrayToHexStr(buffer, len));
 					if(start == 0){
 						for(int i = 0;i < len;i++){
 							buffer_re[buffer_re_cnt+i] = buffer[i];
@@ -51,7 +52,7 @@ public class SerialReader implements Runnable{
 							for(int i = buffer_frame_start;i < buffer_re_cnt;i++,frame_receive_cnt++){
 								frame[i-buffer_frame_start] = buffer_re[i];
 							}
-							continue;
+							copyed = 1;
 						}
 						if(buffer_re_cnt >= 400){
 							System.out.println("有400个数据还没有收到帧");
@@ -62,10 +63,16 @@ public class SerialReader implements Runnable{
 					
 					if(start == 1){
 						//开始接收帧
-						for(int i = 0;i < len;i++){
-							frame[frame_receive_cnt+i] = buffer[i];
+						if(copyed != 1){
+							for(int i = 0;i < len;i++){
+								frame[frame_receive_cnt+i] = buffer[i];
+							}
+							frame_receive_cnt += len;
 						}
-						frame_receive_cnt += len;
+						copyed = 0;
+						
+						System.out.println("Frame:"+StringUtil.byteArrayToHexStr(frame, frame_receive_cnt));
+						
 						switch (frame[0]){
 						case 0x68:
 							if(frame_receive_cnt >11){
