@@ -1004,36 +1004,15 @@ public class Meter_NoEncrypt extends JDialog {
 				command[11] = (byte) 0xAA;
 				command[12] = (byte) 0xAA;
 			}else{
-				String[] addrs=new String[7];
-				if(raddr.length()!=14){
+				if(raddr.length()!=14  || !raddr.matches("[0-9]*")){
 					JOptionPane.showMessageDialog(panel_1, "输入地址长度不对！");
 					return;
-				}else{
-					for(int i = 0;i < 7;i++){
-						addrs[i] = raddr.substring(i*2, 2+i*2);
-					}
-					for(int i = 0;i < 7;i++){
-						try {
-							if(Integer.parseInt(addrs[i],16) >= 0 && Integer.parseInt(addrs[i],16) <= 255){
-								
-							}else{
-								JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
-								return;
-							}
-						} catch (NumberFormatException e) {
-							JOptionPane.showMessageDialog(panel_1, "输入地址不对！");
-							e.printStackTrace();
-							return;
-						}
-					}
-				}				
-				command[24] = (byte) Integer.parseInt(addrs[0],16);
-				command[23] = (byte) Integer.parseInt(addrs[1],16);
-				command[22] = (byte) Integer.parseInt(addrs[2],16);
-				command[21] = (byte) Integer.parseInt(addrs[3],16);
-				command[20] = (byte) Integer.parseInt(addrs[4],16);
-				command[19] = (byte) Integer.parseInt(addrs[5],16);
-				command[18] = (byte) Integer.parseInt(addrs[6],16);
+				}		
+				//meteraddr
+				byte[] maddr = StringUtil.string2Byte(raddr);
+				for(int i = 0;i < 7;i++){
+					command[6+i] = maddr[6-i];
+				}
 			}
 			
 			//control
