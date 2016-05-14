@@ -208,14 +208,26 @@ public class Meter_NoEncrypt extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println(addrTextField.getText());
 				String raddr = addrTextField.getText();
+				int raddr_len = raddr.length();
+				if(raddr_len<10){
+					
+					for(int i = 0;i < (10-raddr_len);i++){
+						raddr = "0"+raddr;
+					}
+				}
+				if(raddr_len < 14){
+					raddr = Property.getStringValue("CSDM")+raddr;
+				}
+				
 				writeAddr(raddr);
+				readNum();
 				addrTextField.setText("");
 			}
 		});
 		addrTextField.setToolTipText("高～～～～～低");
-		addrTextField.setFont(new Font("宋体", Font.PLAIN, 12));
+		addrTextField.setFont(new Font("宋体", Font.PLAIN, 16));
 		addrTextField.setColumns(10);
-		addrTextField.setBounds(185, 151, 218, 21);
+		addrTextField.setBounds(185, 131, 218, 41);
 		panel_1.add(addrTextField);
 		writeFirstNumBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
