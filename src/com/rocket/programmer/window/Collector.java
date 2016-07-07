@@ -942,7 +942,7 @@ public class Collector extends JDialog {
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
-				if(response[11] == (byte)0xA0 && response[12] == (byte)0x17){
+				if((response[11] == (byte)0xA0 && response[12] == (byte)0x17) || (response[11] == (byte)0x17 && response[12] == (byte)0xA0)){
 					byte st = response[14];
 					if((st & 0x03) == 0x00){
 						//open 
@@ -1094,7 +1094,7 @@ public class Collector extends JDialog {
 			}else{
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				if(response[11] == (byte)0x17 && response[12] == (byte)0xA0){
-				if(response[11] == (byte)0xA0 || response[12] == (byte)0x17){
+				if((response[11] == (byte)0xA0 && response[12] == (byte)0x17) || (response[11] == (byte)0x17 && response[12] == (byte)0xA0)){
 					byte st = response[14];
 					if((st & 0x03) == 0x01){
 						//close
