@@ -69,18 +69,18 @@ public class Concentrator extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setTitle("集中器");
-		setBounds(100, 100, 829, 739);
+		setBounds(100, 100, 973, 788);
 		getContentPane().setLayout(null);
 		
 		
 		panel_1.setBorder(new TitledBorder(null, "\u64CD\u4F5C", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(10, 23, 803, 678);
+		panel_1.setBounds(10, 23, 943, 721);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "\u91C7\u96C6\u5668", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(35, 107, 643, 70);
+		panel_2.setBounds(35, 107, 643, 106);
 		panel_1.add(panel_2);
 		panel_2.setLayout(null);
 		
@@ -159,10 +159,44 @@ public class Concentrator extends JDialog {
 		label.setBounds(358, 28, 70, 15);
 		panel_2.add(label);
 		
+		JButton button = new JButton("修改地址");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>() {
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						modifyCJQaddr();
+						return null;
+					}
+				}.execute();
+			}
+		});
+		button.setFont(new Font("宋体", Font.PLAIN, 14));
+		button.setBounds(26, 60, 107, 23);
+		panel_2.add(button);
+		
+		JButton button_1 = new JButton("查看地址");
+		button_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>() {
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readCJQaddr();
+						return null;
+					}
+				}.execute();
+			}
+		});
+		button_1.setFont(new Font("宋体", Font.PLAIN, 14));
+		button_1.setBounds(161, 60, 99, 23);
+		panel_2.add(button_1);
+		
 		JPanel panel_3 = new JPanel();
 		panel_3.setLayout(null);
 		panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\u8868", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(35, 187, 695, 481);
+		panel_3.setBounds(35, 226, 695, 481);
 		panel_1.add(panel_3);
 		
 		JButton btn_meteradd = new JButton("添加");
@@ -696,6 +730,60 @@ public class Concentrator extends JDialog {
 		btn_queryprotocol.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_queryprotocol.setBounds(320, 252, 150, 23);
 		panel_3.add(btn_queryprotocol);
+		
+		JButton btnhd = new JButton("抄HD单个表");
+		btnhd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//meteraddr
+				final String meteraddr = txt_meteraddr.getText();
+				final String cjqaddr = txt_cjqaddr.getText();
+				final String jzqaddr = txt_jzqaddr.getText();
+				
+				int meteraddr_i = Integer.parseInt(meteraddr);
+				if(meteraddr_i > 255 || meteraddr_i < 0){
+					JOptionPane.showMessageDialog(panel_1, "表地址错误！ 1~120");
+					return;
+				}
+				if(cjqaddr == null || cjqaddr == ""){
+					JOptionPane.showMessageDialog(panel_1, "采集器地址错误！ ");
+					return;
+				}
+				if(jzqaddr == null || jzqaddr == ""){
+					JOptionPane.showMessageDialog(panel_1, "集中器地址错误！ ");
+					return;
+				}
+				
+				
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readsingle_eg2(jzqaddr,cjqaddr,meteraddr);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btnhd.setFont(new Font("宋体", Font.PLAIN, 14));
+		btnhd.setBounds(320, 295, 125, 23);
+		panel_3.add(btnhd);
+		
+		JButton btnhd_1 = new JButton("抄HD采集器");
+		btnhd_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						readJZQall_EG2();
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btnhd_1.setFont(new Font("宋体", Font.PLAIN, 14));
+		btnhd_1.setBounds(481, 297, 125, 23);
+		panel_3.add(btnhd_1);
 		btn_addMeters.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new SwingWorker<Void, Void>(){
@@ -776,6 +864,46 @@ public class Concentrator extends JDialog {
 		label_2.setFont(new Font("宋体", Font.PLAIN, 14));
 		label_2.setBounds(358, 28, 70, 15);
 		panel.add(label_2);
+		
+		JPanel panel_4 = new JPanel();
+		panel_4.setBorder(new TitledBorder(null, "\u5176\u4ED6", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_4.setBounds(751, 39, 178, 191);
+		panel_1.add(panel_4);
+		panel_4.setLayout(null);
+		
+		JButton btn_lora = new JButton("集中器LORA");
+		btn_lora.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						modifyLoraSend((byte)0x01);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_lora.setBounds(37, 24, 111, 25);
+		btn_lora.setFont(new Font("宋体", Font.PLAIN, 14));
+		panel_4.add(btn_lora);
+		
+		JButton btn_lora_api = new JButton("采集器API");
+		btn_lora_api.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new SwingWorker<Void, Void>(){
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						modifyLoraAPI((byte)0x01);
+						return null;
+					}
+				}.execute();
+			}
+		});
+		btn_lora_api.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_lora_api.setBounds(37, 78, 111, 25);
+		panel_4.add(btn_lora_api);
 	}
 	
 	protected void modifyIP() {
@@ -2019,6 +2147,328 @@ public class Concentrator extends JDialog {
 					JOptionPane.showMessageDialog(panel_1, "485");
 				}
 			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	// 集中器开始往LORA中发送数据
+	private void modifyLoraSend(byte slave) {
+		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
+
+		byte[] framedata = new byte[1];
+		framedata[0] = slave;
+
+		Frame login = new Frame(1, (byte) (Frame.ZERO | Frame.PRM_MASTER | Frame.PRM_M_SECOND), Frame.AFN_CONFIG,
+				(byte) (Frame.ZERO | Frame.SEQ_FIN | Frame.SEQ_FIR | Frame.SEQ_CON), (byte)0x13, gprsaddr, framedata);
+
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+
+			if (response == null) {
+				// 超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			} else {
+				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
+				JOptionPane.showMessageDialog(panel_1, "OK");
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 采集器进入接收LORA  测试与集中器信号
+	 * @param slave
+	 */
+	private void modifyLoraAPI(byte slave) {
+		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
+
+		byte[] framedata = new byte[1];
+		framedata[0] = slave;
+
+		Frame login = new Frame(1, (byte) (Frame.ZERO | Frame.PRM_MASTER | Frame.PRM_M_SECOND), Frame.AFN_CONFIG,
+				(byte) (Frame.ZERO | Frame.SEQ_FIN | Frame.SEQ_FIR | Frame.SEQ_CON), (byte)0x15, gprsaddr, framedata);
+
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+
+			if (response == null) {
+				// 超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			} else {
+				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
+				loraAPI();
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	private void loraAPI() {
+//		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+//		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+//				Frame.AFN_QUERY, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+//				(byte)0x0C, gprsaddr, new byte[0]);
+//		
+		
+		try {
+			while(true){
+				SerialWriter.queue_out.clear();
+				SerialReader.queue_in.clear();
+//				SerialWriter.queue_out.put(login.getFrame());
+				byte[] response = (byte[]) SerialReader.queue_in.poll(5, TimeUnit.SECONDS);
+				
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					JOptionPane.showMessageDialog(panel_1, "超时,请尝试重新开始");
+					break;
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					txt_cjqaddr.setText(response[15]+"");
+					
+				}
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	
+	private void readCJQaddr() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_QUERY, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x14, gprsaddr, new byte[0]);
+		
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				txt_cjqaddr.setText("超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				//get the addr 
+				String addrstr = "";
+				for(int i = 0;i < 5;i++){
+					addrstr = addrstr+String.format("%02x", response[11-i]&0xFF);
+				}
+				
+				txt_cjqaddr.setText(addrstr);
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	private void modifyCJQaddr() {
+		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
+		
+		byte[] framedata = new byte[5];
+		
+		//jzqaddr
+		String jzqaddr = txt_cjqaddr.getText();
+		if(jzqaddr.length() != 10 || !jzqaddr.matches("[0-9a-f]*")){
+			JOptionPane.showMessageDialog(panel_1, "采集器地址错误！");
+			return;
+		}
+		//jzqaddr
+		byte[] jaddr = StringUtil.string2Byte(jzqaddr);
+		for(int i = 0;i < 5;i++){
+			framedata[i] = jaddr[4-i];
+		}
+		
+		
+		Frame login = new Frame(5, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_CONFIG, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x14, gprsaddr, framedata);
+		
+		try {
+			
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				txt_cjqaddr.setText("超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				readCJQaddr();
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 自动协议2
+	 * @param gprsaddr
+	 * @param cjqaddr
+	 * @param meteraddr
+	 */
+	protected void readsingle_eg2(String gprsaddrstr,String cjqaddrstr,String meteraddrstr) {
+		
+		byte[] gprsaddr = new byte[5];
+		byte[] jaddr = StringUtil.string2Byte(gprsaddrstr);
+		for(int i = 0;i < 5;i++){
+			gprsaddr[i] = jaddr[i];
+		}
+		
+		int cjqaddr = Integer.parseInt(cjqaddrstr);
+		
+		
+		byte[] framedata = new byte[4];
+		framedata[0] = (byte) 0xAA;
+		framedata[1] = (byte) (cjqaddr / 256);
+		framedata[2] = (byte) cjqaddr;
+		framedata[3] = (byte) Integer.parseInt(meteraddrstr);
+		
+		
+		
+		Frame login = new Frame(4, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_READMETER, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x04, gprsaddr, framedata);
+		
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			byte[] response = (byte[]) SerialReader.queue_in.poll(10, TimeUnit.SECONDS);
+			
+			if(response == null){
+				//超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(panel_1, "超时");
+			}else{
+				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+				
+				byte[] meterdata = new byte[3];
+				meterdata[0] = response[18];
+				meterdata[1] = response[19];
+				meterdata[2] = response[20];
+				
+				int meterread = 0;
+				meterread = meterdata[1]&0xFF;
+				meterread = meterread << 8;
+				meterread = meterread|(meterdata[2]&0xFF);
+				String numstr = Integer.toHexString(meterread);
+				
+				JOptionPane.showMessageDialog(panel_1, meteraddrstr+"  读数："+numstr);
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
+	protected void readJZQall_EG2() {
+		
+		final String meteraddrstr = txt_meteraddr.getText();
+		final String cjqaddrstr = txt_cjqaddr.getText();
+		final String jzqaddrstr = txt_jzqaddr.getText();
+		
+		byte[] gprsaddr = new byte[5];
+		byte[] jaddr = StringUtil.string2Byte(jzqaddrstr);
+		for(int i = 0;i < 5;i++){
+			gprsaddr[i] = jaddr[i];
+		}
+		
+		int cjqaddr = Integer.parseInt(cjqaddrstr);
+		
+		
+		byte[] framedata = new byte[4];
+		framedata[0] = (byte) 0x00;
+		framedata[1] = (byte) (cjqaddr / 256);
+		framedata[2] = (byte) cjqaddr;
+		framedata[3] = (byte) Integer.parseInt(meteraddrstr);
+		
+		
+		
+		Frame login = new Frame(4, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+				Frame.AFN_READMETER, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
+				(byte)0x04, gprsaddr, framedata);
+		
+		
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			
+			
+			boolean rcv_over = false;
+			
+			Sheet sheet = null;
+			Row row = null;
+			Workbook wb = new HSSFWorkbook();
+			sheet = wb.createSheet("meterread");
+			row = sheet.createRow(0);
+			row.createCell(0).setCellValue("表地址");
+			row.createCell(1).setCellValue("表读数");
+			int rowcount = 1;
+			
+			int timeout = 0;
+			while(!rcv_over && timeout < 50){
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+				
+				if(response == null){
+					//超时
+					System.out.println("超时");
+					timeout++;
+				}else{
+					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					if((response[13]&0x60) == (byte)0x60 || (response[13]&0x60) == (byte)0x20){
+						rcv_over = true;
+					}
+					//deal the frame
+					for(int i = 0;i < (response.length-18)/3;i++){
+						byte[] meterdata = new byte[3];
+						meterdata[0] = response[18 + 3 * i];
+						meterdata[1] = response[18 + 3 * i + 1];
+						meterdata[2] = response[18 + 3 * i + 2];
+			            
+						int meteraddr = meterdata[0]&0xFF;
+						
+						int meterread = 0;
+						meterread = meterdata[1]&0xFF;
+						meterread = meterread << 8;
+						meterread = meterread|(meterdata[2]&0xFF);
+						String numstr = Integer.toHexString(meterread);
+						
+						;
+						row = sheet.createRow(rowcount++);
+						row.createCell(0).setCellValue(meteraddr+"");
+						row.createCell(1).setCellValue(numstr);
+					}
+				}
+			}
+			
+			String excelpath = System.getProperty("user.dir")+"\\表读数"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime())+".xls";
+			FileOutputStream fileOut = new FileOutputStream(excelpath);
+			wb.write(fileOut);
+		    fileOut.close();
+		    
+//		    txt_fileaddr.setText("导出到"+excelpath);
+		    JOptionPane.showMessageDialog(panel_1, "导出到"+excelpath);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
