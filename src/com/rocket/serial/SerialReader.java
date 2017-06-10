@@ -104,7 +104,12 @@ public class SerialReader implements Runnable{
 								}else{
 									//188表
 									int frame_len = 0;
-									frame_len = frame[10] + 13;
+									if(frame[10] == 0x16){
+										frame_len = frame[10] + 13 -2;
+									}else{
+										frame_len = frame[10] + 13;
+									}
+									
 									if(frame_receive_cnt >= frame_len){
 										byte cs = 0;
 										for(int i = 0;i < frame_len-2;i++){
