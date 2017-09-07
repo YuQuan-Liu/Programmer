@@ -623,6 +623,10 @@ public class Collector extends JDialog {
 		String cjqaddr_ = "";
 		ReadResult result = null;
 		for(int i = 0;i <= rows;i++){
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+			}
 			row = sheet.getRow(i);
 			String cjqaddr = getCellString(row, 0);
 			String meteraddr = getCellString(row, 1);
