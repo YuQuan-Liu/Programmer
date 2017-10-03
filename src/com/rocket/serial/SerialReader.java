@@ -9,7 +9,7 @@ import com.rocket.util.StringUtil;
 
 public class SerialReader implements Runnable{
 	
-	public static LinkedBlockingDeque queue_in = new LinkedBlockingDeque();
+	public static LinkedBlockingDeque<byte[]> queue_in = new LinkedBlockingDeque<byte[]>();
 	InputStream in;
 
 	public SerialReader(InputStream in) {

@@ -3,7 +3,6 @@ package com.rocket.programmer.window;
 import gnu.io.CommPortIdentifier;
 import gnu.io.RXTXCommDriver;
 import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
 
 import java.awt.EventQueue;
 
@@ -13,7 +12,6 @@ import javax.swing.JOptionPane;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.awt.event.WindowAdapter;
@@ -47,6 +45,7 @@ public class MainWindow {
 				try {
 					MainWindow window = new MainWindow();
 					window.frmRocketprogrammer.setVisible(true);
+					window.frmRocketprogrammer.setFont(new Font("宋体", Font.PLAIN, 14));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -78,110 +77,9 @@ public class MainWindow {
 			}
 		});
 		frmRocketprogrammer.setTitle("Rocket～Programmer");
-		frmRocketprogrammer.setBounds(100, 100, 500, 334);
+		frmRocketprogrammer.setBounds(100, 100, 501, 244);
 		frmRocketprogrammer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmRocketprogrammer.getContentPane().setLayout(null);
-		
-		JButton button = new JButton("表");
-		button.setFont(new Font("宋体", Font.PLAIN, 12));
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if(serialPort != null){
-					try {
-						serialPort.setSerialPortParams(Property.getIntValue("MeterBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
-						in = serialPort.getInputStream();
-						out = serialPort.getOutputStream();
-						if(reader != null){
-							reader.interrupt();
-						}
-						if(writer != null){
-							writer.interrupt();
-						}
-						reader = new Thread(new SerialReader(in));
-						writer = new Thread(new SerialWriter(out));
-						reader.start();
-						writer.start();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					//如果把下面的两条语句放到  配置Port前  则配置Port的代码得不到执行
-					Meter_NoEncrypt meter = new Meter_NoEncrypt();
-					meter.setVisible(true);
-				}else{
-					JOptionPane.showMessageDialog(frmRocketprogrammer, "先打开串口！");
-				}
-				
-			}
-		});
-		button.setBounds(51, 123, 93, 45);
-		frmRocketprogrammer.getContentPane().add(button);
-		
-		JButton button_1 = new JButton("采集器");
-		button_1.setFont(new Font("宋体", Font.PLAIN, 12));
-		button_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-				if(serialPort != null){
-					try {
-						serialPort.setSerialPortParams(Property.getIntValue("CollectorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
-						in = serialPort.getInputStream();
-						out = serialPort.getOutputStream();
-						if(reader != null){
-							reader.interrupt();
-						}
-						if(writer != null){
-							writer.interrupt();
-						}
-						reader = new Thread(new SerialReader(in));
-						writer = new Thread(new SerialWriter(out));
-						reader.start();
-						writer.start();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					Collector collector = new Collector();
-					collector.setVisible(true);
-				}else{
-					JOptionPane.showMessageDialog(frmRocketprogrammer, "先打开串口！");
-				}
-				
-			}
-		});
-		button_1.setBounds(195, 123, 93, 45);
-		frmRocketprogrammer.getContentPane().add(button_1);
-		
-		JButton button_2 = new JButton("集中器");
-		button_2.setFont(new Font("宋体", Font.PLAIN, 12));
-		button_2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-				if(serialPort != null){
-					try {
-						serialPort.setSerialPortParams(Property.getIntValue("ConcentratorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
-						in = serialPort.getInputStream();
-						out = serialPort.getOutputStream();
-						if(reader != null){
-							reader.interrupt();
-						}
-						if(writer != null){
-							writer.interrupt();
-						}
-						reader = new Thread(new SerialReader(in));
-						writer = new Thread(new SerialWriter(out));
-						reader.start();
-						writer.start();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					Concentrator concentrator = new Concentrator();
-					concentrator.setVisible(true);
-				}else{
-					JOptionPane.showMessageDialog(frmRocketprogrammer, "先打开串口！");
-				}
-			}
-		});
-		button_2.setBounds(339, 123, 93, 45);
-		frmRocketprogrammer.getContentPane().add(button_2);
 		
 		final JLabel label = new JLabel("串口：");
 		label.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -223,12 +121,12 @@ public class MainWindow {
 		openBtn.setBounds(339, 45, 93, 23);
 		frmRocketprogrammer.getContentPane().add(openBtn);
 		
-		JButton button_3 = new JButton("老化188表");
-		button_3.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+		JButton button_4 = new JButton("远传设备配置");
+		button_4.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				if(serialPort != null){
 					try {
-						serialPort.setSerialPortParams(Property.getIntValue("CollectorBaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
+						serialPort.setSerialPortParams(Property.getIntValue("BaudRate"), Property.getIntValue("DATABITS"), Property.getIntValue("STOPBITS"), Property.getIntValue("PARITY"));
 						in = serialPort.getInputStream();
 						out = serialPort.getOutputStream();
 						if(reader != null){
@@ -241,18 +139,21 @@ public class MainWindow {
 						writer = new Thread(new SerialWriter(out));
 						reader.start();
 						writer.start();
-					} catch (Exception e) {
-						e.printStackTrace();
+					} catch (Exception e1) {
+						e1.printStackTrace();
 					}
-					LaoHua188 lao = new LaoHua188();
-					lao.setVisible(true);
+					//如果把下面的两条语句放到  配置Port前  则配置Port的代码得不到执行
+					ConcentratorV2 concentratorV2 = new ConcentratorV2();
+					concentratorV2.setVisible(true);
 				}else{
 					JOptionPane.showMessageDialog(frmRocketprogrammer, "先打开串口！");
 				}
+				ConcentratorV2 concentratorV2 = new ConcentratorV2();
+				concentratorV2.setVisible(true);
 			}
 		});
-		button_3.setFont(new Font("宋体", Font.PLAIN, 12));
-		button_3.setBounds(51, 205, 93, 45);
-		frmRocketprogrammer.getContentPane().add(button_3);
+		button_4.setFont(new Font("宋体", Font.PLAIN, 14));
+		button_4.setBounds(26, 115, 134, 45);
+		frmRocketprogrammer.getContentPane().add(button_4);
 	}
 }

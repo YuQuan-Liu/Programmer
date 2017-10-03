@@ -30,6 +30,42 @@ public class Frame {
 	public static final byte AFN_CONFIG = 0x03;
 	public static final byte AFN_QUERY = 0x0A;
 	
+	//Fn AFN : AFN_CONFIG  AFN_QUERY
+	public static final byte FN_IP_PORT = 2;
+	public static final byte FN_ADDR = 3;
+	public static final byte FN_METER = 6;
+	public static final byte FN_CJQ = 7;
+	public static final byte FN_BAUD = 8; 		 //设置抄表波特率
+	public static final byte FN_SYN = 9;  		//设置CJQ JZQ表同步
+	public static final byte FN_MBUS = 12;  	//底层表的类型   是否打开MBUS部分  发送信息
+	public static final byte FN_DI_SEQ = 14;  	//DI0 DI1 顺序   0xAA~DI1在前(千宝通)   0xFF~DI0在前(default)   只在抄表时使用
+	public static final byte FN_ERASE = 15;  	//将FLASH清空  重新初始化
+	public static final byte FN_RESET = 16;  	//重启系统
+	public static final byte FN_ACK_ACTION = 17;	  //先应答后操作~0xaa    先操作后应答~0xff
+	public static final byte FN_PROTOCOL = 18;  	//协议类型 0xFF~188(Default)  1~EG  
+	public static final byte FN_LORA_SEND = 19;  	//发送供采集器测试信号使用指令 
+	public static final byte FN_DEVICE_MODE = 20;	 //设置设备是采集器还是集中器 
+	public static final byte FN_READING = 21; 		 //采集器是否在读表
+	public static final byte FN_ALL_READDATA = 22; 	 //查询采集器下所有的抄表结果
+
+	public static final byte FN_VERSION = (byte)0xFF;  //程序版本号 
+	
+	//Fn  AFN :AFN_CONTROL
+	public static final byte FN_CLOSE = 2;
+	public static final byte FN_OPEN = 3;
+	public static final byte FN_CLEAN = 4;   //执行一次开关阀操作  防止生锈  阀门清洗
+
+	//Fn AFN :AFN_READMETER
+	public static final byte FN_CURRENT_METER = 4;
+	public static final byte FN_READ_CJQ = 5;
+
+	//Fn  AFN AFN_YES 
+	public static final byte FN_ACK = 1;
+	public static final byte FN_NACK = 2;
+
+	//Fn LINK_TEST   AFN :AFN_LOGIN
+	public static final byte FN_HEARTBEAT = 3;
+	
 	private byte[] frame;
 	private int dataLength;
 	private int frameLength;

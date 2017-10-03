@@ -27,7 +27,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import com.rocket.programmer.window.MainWindow;
-import com.rocket.programmer.window.Meter_NoEncrypt;
 import com.rocket.serial.SerialReader;
 import com.rocket.serial.SerialWriter;
 import com.rocket.util.StringPad;

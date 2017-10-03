@@ -11,7 +11,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
 import com.rocket.programmer.window.MainWindow;
-import com.rocket.programmer.window.Meter_NoEncrypt;
 import com.rocket.serial.SerialReader;
 import com.rocket.serial.SerialWriter;
 import com.rocket.util.StringPad;

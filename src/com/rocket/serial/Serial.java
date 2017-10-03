@@ -12,7 +12,10 @@ import com.rocket.util.Property;
 public class Serial {
 	public static SerialPort serialPort = null;
 	
-	//get the available ports name
+	/**
+	 * 获取当前电脑所连接的所有的COM端口名
+	 * @return
+	 */
 	public static String[] getPortsName(){
 		Enumeration ports = CommPortIdentifier.getPortIdentifiers();
 		ArrayList<String> portstr = new ArrayList<>();

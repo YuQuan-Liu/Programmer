@@ -6,7 +6,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class SerialWriter implements Runnable{
 
-	public static LinkedBlockingDeque queue_out = new LinkedBlockingDeque();
+	public static LinkedBlockingDeque<byte[]> queue_out = new LinkedBlockingDeque<byte[]>();
 	OutputStream out;
 
 	public SerialWriter(OutputStream out) {
