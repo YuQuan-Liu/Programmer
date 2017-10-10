@@ -33,8 +33,8 @@ public class SerialReader implements Runnable{
 		try {
 			while(!Thread.interrupted()){
 				while((len = in.read(buffer)) > 0){
-					System.out.println(len);
-					System.out.println(StringUtil.byteArrayToHexStr(buffer, len));
+//					System.out.println(len);
+//					System.out.println(StringUtil.byteArrayToHexStr(buffer, len));
 					if(start == 0){
 						for(int i = 0;i < len;i++){
 							buffer_re[buffer_re_cnt+i] = buffer[i];
@@ -71,7 +71,7 @@ public class SerialReader implements Runnable{
 						}
 						copyed = 0;
 						
-						System.out.println("Frame:"+StringUtil.byteArrayToHexStr(frame, frame_receive_cnt));
+//						System.out.println("Frame:"+StringUtil.byteArrayToHexStr(frame, frame_receive_cnt));
 						
 						switch (frame[0]){
 						case 0x68:

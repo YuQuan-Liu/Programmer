@@ -47,6 +47,7 @@ public class Frame {
 	public static final byte FN_DEVICE_MODE = 20;	 //设置设备是采集器还是集中器 
 	public static final byte FN_READING = 21; 		 //采集器是否在读表
 	public static final byte FN_ALL_READDATA = 22; 	 //查询采集器下所有的抄表结果
+	public static final byte FN_SIMCARD = 23; 	 //联通移动卡
 
 	public static final byte FN_VERSION = (byte)0xFF;  //程序版本号 
 	
@@ -224,7 +225,9 @@ public class Frame {
 		bf.put(afn);
 		bf.put(seq);
 		bf.put(fn);
-		bf.put(data);
+		if(dataLength > 0){
+			bf.put(data);
+		}
 		byte cs_ = 0;
 		for(int i =6;i < (bf.capacity()-2);i++){
 			cs_ += bf.get(i);
