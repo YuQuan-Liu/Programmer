@@ -16,15 +16,21 @@ import org.apache.poi.ss.usermodel.Workbook;
 import com.rocket.obj.Frame;
 import com.rocket.serial.SerialReader;
 import com.rocket.serial.SerialWriter;
+import com.rocket.util.Property;
 import com.rocket.util.StringUtil;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import javax.swing.JTextField;
 import java.awt.Font;
+import java.awt.Dialog.ModalityType;
+
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.JScrollPane;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.DefaultComboBoxModel;
@@ -32,6 +38,7 @@ import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.awt.event.ActionEvent;
 
@@ -45,6 +52,7 @@ public class ConcentratorV2 extends JFrame {
 	private JComboBox combo_config;
 	private JTextArea txt_meteraddr;
 	private JComboBox combo_query;
+	private JTextArea txt_out;
 
 	/**
 	 * Launch the application.
@@ -66,8 +74,9 @@ public class ConcentratorV2 extends JFrame {
 	 * Create the frame.
 	 */
 	public ConcentratorV2() {
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setResizable(false);
 		setTitle("远传设备配置V2");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 880, 719);
 		contentPane = new JPanel();
 		contentPane.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "", TitledBorder.LEADING, TitledBorder.TOP, new Font("宋体", Font.PLAIN, 14), new Color(0, 0, 0)));
@@ -167,12 +176,34 @@ public class ConcentratorV2 extends JFrame {
 		JButton btn_config = new JButton("设置");
 		btn_config.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				device_config();
+				new SwingWorker<Void, Void>() {
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						device_config();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		btn_config.setFont(new Font("宋体", Font.PLAIN, 14));
 		btn_config.setBounds(385, 30, 113, 27);
 		panel_1.add(btn_config);
+		
+		JButton btn_clear = new JButton("清空");
+		btn_clear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				txt_cjqaddr.setText("");
+				txt_ip.setText("");
+				txt_jzqaddr.setText("");
+				txt_meteraddr.setText("");
+				txt_out.setText("");
+				txt_port.setText("");
+			}
+		});
+		btn_clear.setFont(new Font("宋体", Font.PLAIN, 14));
+		btn_clear.setBounds(565, 30, 113, 27);
+		panel_1.add(btn_clear);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setLayout(null);
@@ -195,7 +226,14 @@ public class ConcentratorV2 extends JFrame {
 		JButton btn_query = new JButton("查询");
 		btn_query.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				device_query();
+				new SwingWorker<Void, Void>() {
+
+					@Override
+					protected Void doInBackground() throws Exception {
+						device_query();
+						return null;
+					}
+				}.execute();
 			}
 		});
 		btn_query.setFont(new Font("宋体", Font.PLAIN, 14));
@@ -212,7 +250,7 @@ public class ConcentratorV2 extends JFrame {
 		scrollPane_1.setBounds(14, 29, 806, 198);
 		panel_3.add(scrollPane_1);
 		
-		JTextArea txt_out = new JTextArea();
+		txt_out = new JTextArea();
 		txt_out.setFont(new Font("宋体", Font.PLAIN, 14));
 		scrollPane_1.setViewportView(txt_out);
 	}
@@ -273,6 +311,33 @@ public class ConcentratorV2 extends JFrame {
 		}
 	}
 	
+	/**
+	 * 将发送接收的帧打印到txt_out
+	 * @param frame
+	 * @param send
+	 */
+	private void txt_out_append(byte[] frame, int send) {
+		
+		String now = new SimpleDateFormat("[HH:mm:ss]").format(new Date());
+		String send_recv = " 接收: ";
+		if(send == 1){
+			send_recv = " 发送: ";
+		}
+		
+		String frame_str = now + send_recv + StringUtil.byteArrayToHexStr(frame, frame.length)+"\r\n";
+		
+		int frame_out = Property.getIntValue("FRAMEOUT");  //是否将发送接收的指令打印到txt_out
+		if(frame_out == 1){
+			txt_out.append(frame_str);
+		}
+	}
+	
+	private void txt_out_append_data(String data) {
+		
+		txt_out.append(data+"\r\n");
+	}
+
+	
 	private void device_query_reading() {
 		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
 		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
@@ -283,12 +348,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				switch(response[15]){
 				case (byte)0x01:
@@ -315,7 +382,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
-
+			txt_out_append(login.getFrame(),1);
 			boolean rcv_over = false;
 			int timeout = 0;
 			int frame_count = 0;
@@ -329,6 +396,7 @@ public class ConcentratorV2 extends JFrame {
 					System.out.println("超时");
 					timeout++;
 				} else {
+					txt_out_append(response,0);
 					byte seq = (byte) (response[13] & 0x0F); // 当前帧的seq
 					System.out.println("SEQ:" + seq);
 					device_config_ack(seq);
@@ -370,7 +438,7 @@ public class ConcentratorV2 extends JFrame {
 								readresult = "强光";
 								break;
 							default:
-								readresult = "";
+								readresult = "正常";
 								break;
 							}
 						}
@@ -389,15 +457,16 @@ public class ConcentratorV2 extends JFrame {
 							valvestatus = "异常"; // 异常
 							break;
 						default:
+							valvestatus = "异常"; // 异常
 							break;
 						}
-						System.out.println(maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
-								+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus);
+						String data_str = maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
+										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
+						System.out.println(data_str);
+						txt_out_append_data(data_str);
 					}
 				}
 			}
-			
-			
 			
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -414,12 +483,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				//get the addr 
 				String addrstr = "";
@@ -444,12 +515,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				String ip = (response[18]&0xFF)+"."+(response[17]&0xFF)+"."+(response[16]&0xFF)+"."+(response[15]&0xFF);
 				int port = Integer.parseInt(String.format("%02x", response[20]&0xFF)+String.format("%02x", response[19]&0xFF), 16);
@@ -471,12 +544,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				String show = "";
 				for(int i = 0;i < (response.length-8-9)/5;i++){
@@ -576,7 +651,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
-			
+			txt_out_append(login.getFrame(),1);
 			boolean rcv_over = false;
 			int timeout = 0;
 			int frame_count = 0;
@@ -587,6 +662,7 @@ public class ConcentratorV2 extends JFrame {
 				if(response == null){  //超时
 					timeout++;
 				}else{
+					txt_out_append(response,0);
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 					
 					frame_all = (response[15]&0xFF) | ((response[16]&0xFF)<<8);
@@ -616,7 +692,9 @@ public class ConcentratorV2 extends JFrame {
 							maddrstr = maddrstr+String.format("%02x", maddrbytes[k]&0xFF)+" ";
 						}
 						
-						System.out.println("cjqaddr:"+cjqaddrstr+";meteraddr:"+maddrstr);
+						String data_str = "cjqaddr:"+cjqaddrstr+";meteraddr:"+maddrstr;
+						System.out.println(data_str);
+						txt_out_append_data(data_str);
 					}
 				}
 			}
@@ -650,20 +728,27 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("ACK超时");
 				JOptionPane.showMessageDialog(contentPane, "ACK超时");
 			}else{  //接收到ACK
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				response = (byte[]) SerialReader.queue_in.poll(60, TimeUnit.SECONDS);   //等待SYN结果
 				if(response == null){ //超时
 					System.out.println("SYN超时");
 					JOptionPane.showMessageDialog(contentPane, "SYN超时");
 				}else{  //SYN结果
+					txt_out_append(response,0);
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-					//TODO ...
+					int jzq_meter_count = (response[15]&0xFF) | ((response[16]&0xFF)<<8);
+					int cjq_return_meter_count = (response[17]&0xFF) | ((response[18]&0xFF)<<8); 
+					int no_meter_count = (response[19]&0xFF) | ((response[20]&0xFF)<<8); 
+					String msg = "集中器中表数量:  "+jzq_meter_count+"\r\n采集器中表数量:  "+cjq_return_meter_count + "\r\n集中器中没有的表数量:  "+no_meter_count;
+					JOptionPane.showMessageDialog(contentPane, msg);
 				}
 			}
 		} catch (Exception e1) {
@@ -681,12 +766,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				switch(response[15]){
 				case (byte)0xAA:
@@ -715,12 +802,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				switch(response[15]){
 				case (byte)0xAA:
@@ -746,12 +835,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				switch(response[15]){
 				case (byte)0xEE:
@@ -777,12 +868,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				switch(response[15]){
 				case (byte)0x12:
@@ -815,12 +908,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				switch(response[15]){
 				case (byte)0xAA:
@@ -846,12 +941,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				switch(response[15]){
 				case (byte)0xAA:
@@ -877,12 +974,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				JOptionPane.showMessageDialog(contentPane, response[15]);
 			}
@@ -1006,7 +1105,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
-
+			txt_out_append(login.getFrame(),1);
 			byte[] ackresponse = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
 			if (ackresponse == null) {   // 超时
@@ -1014,6 +1113,7 @@ public class ConcentratorV2 extends JFrame {
 				return;
 			}
 			if (ackresponse[12] == 0x00) { // 如果是集中器对抄表指令的ACK
+				txt_out_append(ackresponse,0);
 				System.out.println("jzq ack:" + StringUtil.byteArrayToHexStr(ackresponse, ackresponse.length));
 			}
 
@@ -1028,11 +1128,11 @@ public class ConcentratorV2 extends JFrame {
 					System.out.println("超时");
 					timeout++;
 				} else {
+					txt_out_append(response,0);
 					//集中器返回的FAKE帧
 					if(response[12] == Frame.AFN_FAKE){
 						continue;
 					}
-					
 					byte seq = (byte) (response[13] & 0x0F); // 当前帧的seq
 					System.out.println("SEQ:" + seq);
 					device_config_ack(seq);
@@ -1075,7 +1175,7 @@ public class ConcentratorV2 extends JFrame {
 								readresult = "强光";
 								break;
 							default:
-								readresult = "";
+								readresult = "正常";
 								break;
 							}
 						}
@@ -1094,10 +1194,14 @@ public class ConcentratorV2 extends JFrame {
 							valvestatus = "异常"; // 异常
 							break;
 						default:
+							valvestatus = "异常"; // 异常
 							break;
 						}
-						System.out.println(maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
-								+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus);
+						
+						String data_str = maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
+										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
+						System.out.println(data_str);
+						txt_out_append_data(data_str);
 					}
 				}
 			}
@@ -1184,7 +1288,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
-			
+			txt_out_append(login.getFrame(),1);
 			byte[] ackresponse = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
 			if (ackresponse == null) {
@@ -1193,6 +1297,7 @@ public class ConcentratorV2 extends JFrame {
 				return;
 			}
 			if(ackresponse[12] == 0x00){  //如果是集中器对抄表指令的ACK
+				txt_out_append(ackresponse,0);
 				System.out.println("jzq ack:" + StringUtil.byteArrayToHexStr(ackresponse, ackresponse.length));
 			}
 			
@@ -1209,6 +1314,7 @@ public class ConcentratorV2 extends JFrame {
 					System.out.println("超时");
 					timeout++;
 				}else{
+					txt_out_append(response,0);
 					byte seq = (byte)(response[13]&0x0F);  //当前帧的seq
 					System.out.println("SEQ:"+seq);
 					device_config_ack(seq);
@@ -1248,7 +1354,7 @@ public class ConcentratorV2 extends JFrame {
 								readresult = "强光";
 								break;
 							default:
-								readresult = "";
+								readresult = "正常";
 								break;
 							}
 						}
@@ -1267,9 +1373,14 @@ public class ConcentratorV2 extends JFrame {
 							valvestatus = "异常"; //异常
 							break;
 						default:
+							valvestatus = "异常"; // 异常
 							break;
 						}
-						System.out.println(maddrstr + ":"+meterread+":"+String.format("%02x", st_l&0xFF)+":"+String.format("%02x", st_h&0xFF)+":"+readresult+":"+valvestatus);
+						String data_str = maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
+										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
+						System.out.println(data_str);
+						txt_out_append_data(data_str);
+						
 					}
 				}
 			}
@@ -1360,7 +1471,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
-
+			txt_out_append(login.getFrame(),1);
 			byte[] ackresponse = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
 			if (ackresponse == null) {
@@ -1369,6 +1480,7 @@ public class ConcentratorV2 extends JFrame {
 				return;
 			}
 			if(ackresponse[12] == 0x00){  //如果是采集器对抄表指令的ACK
+				txt_out_append(ackresponse,0);
 				System.out.println("cjq ack:" + StringUtil.byteArrayToHexStr(ackresponse, ackresponse.length));
 			}
 			
@@ -1388,6 +1500,7 @@ public class ConcentratorV2 extends JFrame {
 					System.out.println("超时");
 					timeout++;
 				} else {
+					txt_out_append(response,0);
 					byte seq = (byte) (response[13] & 0x0F); // 当前帧的seq
 					System.out.println("SEQ:" + seq);
 					device_config_ack(seq);
@@ -1429,7 +1542,7 @@ public class ConcentratorV2 extends JFrame {
 								readresult = "强光";
 								break;
 							default:
-								readresult = "";
+								readresult = "正常";
 								break;
 							}
 						}
@@ -1448,10 +1561,13 @@ public class ConcentratorV2 extends JFrame {
 							valvestatus = "异常"; // 异常
 							break;
 						default:
+							valvestatus = "异常"; // 异常
 							break;
 						}
-						System.out.println(maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
-								+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus);
+						String data_str = maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
+										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
+						System.out.println(data_str);
+						txt_out_append_data(data_str);
 					}
 				}
 			}
@@ -1469,6 +1585,7 @@ public class ConcentratorV2 extends JFrame {
 		System.out.println("write"+StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
 		try {
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -1489,12 +1606,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){  //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				readProtocol();
 			}
@@ -1517,12 +1636,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){  //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				readProtocol();
 			}
@@ -1544,6 +1665,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
@@ -1551,6 +1673,7 @@ public class ConcentratorV2 extends JFrame {
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			} else {
+				txt_out_append(response,0);
 				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
 				JOptionPane.showMessageDialog(contentPane, "LORA TEST");
 			}
@@ -1572,6 +1695,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
@@ -1579,6 +1703,7 @@ public class ConcentratorV2 extends JFrame {
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			} else {
+				txt_out_append(response,0);
 				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
 				JOptionPane.showMessageDialog(contentPane, "重启");
 			}
@@ -1600,6 +1725,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
@@ -1607,6 +1733,7 @@ public class ConcentratorV2 extends JFrame {
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			} else {
+				txt_out_append(response,0);
 				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
 				JOptionPane.showMessageDialog(contentPane, "FLASH重新初始化");
 			}
@@ -1639,6 +1766,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
@@ -1646,8 +1774,9 @@ public class ConcentratorV2 extends JFrame {
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			} else {
+				txt_out_append(response,0);
 				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
-				JOptionPane.showMessageDialog(contentPane, "开始同步");
+				JOptionPane.showMessageDialog(contentPane, "开始同步  等待几分钟后查询同步结果");
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -1723,6 +1852,7 @@ public class ConcentratorV2 extends JFrame {
 				SerialWriter.queue_out.clear();
 				SerialReader.queue_in.clear();
 				SerialWriter.queue_out.put(login.getFrame());
+				txt_out_append(login.getFrame(),1);
 				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
 				String result = "";
@@ -1730,8 +1860,13 @@ public class ConcentratorV2 extends JFrame {
 					System.out.println("超时");
 					result = meters_this+"超时";
 				}else{
+					txt_out_append(response,0);
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-					result = meters_this+"表添加成功";
+					
+					String data_str = meters_this+"表添加成功";
+					System.out.println(data_str);
+					txt_out_append_data(data_str);
+					
 				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -1754,12 +1889,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){    //超时
 				System.out.println("超时");
 				txt_cjqaddr.setText("超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				txt_cjqaddr.setText("全部采集器删除");
 			}
@@ -1795,12 +1932,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){    //超时
 				System.out.println("超时");
 				txt_cjqaddr.setText("超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 				txt_cjqaddr.setText(cjqaddr+"采集器添加成功");
 			}
@@ -1824,12 +1963,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){  //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				readProtocol();
 			}
@@ -1853,12 +1994,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){  //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				readProtocol();
 			}
@@ -1882,12 +2025,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){  //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				readDISeq();
 			}
@@ -1911,12 +2056,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){  //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				readSlave();
 			}
@@ -1978,12 +2125,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 			
 			if(response == null){ //超时
 				System.out.println("超时");
 				JOptionPane.showMessageDialog(contentPane, "超时");
 			}else{
+				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				queryIP();
 			}
@@ -2017,12 +2166,14 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.clear();
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
 			byte[] response = SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
 			if (response == null) {// 超时
 				System.out.println("超时");
 				txt_jzqaddr.setText("超时");
 			} else {
+				txt_out_append(response,0);
 				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
 //				readJZQaddr();
 			}
@@ -2030,6 +2181,5 @@ public class ConcentratorV2 extends JFrame {
 			e1.printStackTrace();
 		}
 	}
-	
 	
 }
