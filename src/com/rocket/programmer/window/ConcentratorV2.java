@@ -626,10 +626,25 @@ public class ConcentratorV2 extends JFrame {
 	}
 	
 	private void device_query_syn() {
-		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
-		Frame login = new Frame(0, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
+		// cjqaddr
+		final String cjqaddr = txt_cjqaddr.getText();
+		// cjq
+		if (cjqaddr.length() != 10 || !cjqaddr.matches("[0-9]*")) {
+			JOptionPane.showMessageDialog(contentPane, "采集器地址错误！");
+			return;
+		}
+
+		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
+		byte[] framedata = new byte[5];
+		byte[] caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
+		
+		for (int i = 0; i < 5; i++) {
+			framedata[i] = caddr[4 - i];
+		}
+		
+		Frame login = new Frame(framedata.length, (byte)(Frame.ZERO | Frame.PRM_MASTER |Frame.PRM_M_SECOND), 
 				Frame.AFN_QUERY, (byte)(Frame.ZERO|Frame.SEQ_FIN|Frame.SEQ_FIR|Frame.SEQ_CON), 
-				Frame.FN_SYN, gprsaddr, null);
+				Frame.FN_SYN, gprsaddr, framedata);
 		
 		try {
 			SerialWriter.queue_out.clear();
@@ -948,7 +963,7 @@ public class ConcentratorV2 extends JFrame {
 			device_config_readjzq((byte)0xAA);
 			break;
 		case "抄集中器全部":
-			device_config_readjzq((byte)0xFF);
+			device_config_readjzq_all();
 			break;
 		case "无线":
 			device_config_devicemode((byte)0xFF);
@@ -971,12 +986,127 @@ public class ConcentratorV2 extends JFrame {
 		case "重启":
 			device_config_reboot();
 			break;
-		case "集中器LORATEST":
+		case "集中器LORA TEST":
 			device_config_loratest();
 			break;
 		}
 	}
 	
+	private void device_config_readjzq_all() {
+		
+		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
+		byte[] framedata = new byte[1];
+		framedata[0] = (byte) 0xFF;
+
+		Frame login = new Frame(framedata.length, (byte) (Frame.ZERO | Frame.PRM_MASTER | Frame.PRM_M_SECOND),
+				Frame.AFN_READMETER, (byte) (Frame.ZERO | Frame.SEQ_FIN | Frame.SEQ_FIR | Frame.SEQ_CON),
+				Frame.FN_CURRENT_METER, gprsaddr, framedata);
+
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+
+			byte[] ackresponse = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+
+			if (ackresponse == null) {   // 超时
+				System.out.println("超时");
+				return;
+			}
+			if (ackresponse[12] == 0x00) { // 如果是集中器对抄表指令的ACK
+				System.out.println("jzq ack:" + StringUtil.byteArrayToHexStr(ackresponse, ackresponse.length));
+			}
+
+			boolean rcv_over = false;
+			int timeout = 0;
+			int frame_count = 0;
+			int frame_all = 0;
+			while (!rcv_over && timeout < 100) { // 等待抄表结果 5min
+				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+
+				if (response == null) {   // 超时
+					System.out.println("超时");
+					timeout++;
+				} else {
+					//集中器返回的FAKE帧
+					if(response[12] == Frame.AFN_FAKE){
+						continue;
+					}
+					
+					byte seq = (byte) (response[13] & 0x0F); // 当前帧的seq
+					System.out.println("SEQ:" + seq);
+					device_config_ack(seq);
+					System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
+					
+					frame_all = (response[15] & 0xFF) | ((response[16] & 0xFF) << 8);
+					frame_count = (response[17] & 0xFF) | ((response[18] & 0xFF) << 8);
+					if (frame_all == frame_count) {
+						rcv_over = true;
+					}
+					// deal the frame
+					for (int i = 0; i < (response.length - 8 - 9 - 4 - 1) / 14; i++) {
+						byte[] maddrbytes = new byte[7];
+						for (int k = 0; k < 7; k++) {
+							maddrbytes[6 - k] = response[20 + 14 * i + k];
+						}
+						String maddrstr = "";
+						for (int k = 0; k < 7; k++) {
+							maddrstr = maddrstr + String.format("%02x", maddrbytes[k] & 0xFF) + " ";
+						}
+						String meterread = String.format("%02x", response[20 + 14 * i + 11] & 0xFF)
+								+ String.format("%02x", response[20 + 14 * i + 10] & 0xFF)
+								+ String.format("%02x", response[20 + 14 * i + 9] & 0xFF);
+
+						byte st_l = response[20 + 14 * i + 12];
+						byte st_h = response[20 + 14 * i + 13];
+
+						String readresult = "";
+						if ((st_l & 0x40) == 0x40) { // timeout 0x40
+							readresult = "超时";
+						} else { // normal
+							switch (st_h & 0x20) {
+							case 0x20:
+								readresult = "气泡";
+								break;
+							case 0x30:
+								readresult = "致命故障";
+								break;
+							case 0x80:
+								readresult = "强光";
+								break;
+							default:
+								readresult = "";
+								break;
+							}
+						}
+						String valvestatus = "";
+						switch (st_l & 0x03) {
+						case 0x00:
+							valvestatus = "开"; // 开
+							break;
+						case 0x01:
+							valvestatus = "关"; // 关
+							break;
+						case 0x02:
+							valvestatus = "关"; // 关
+							break;
+						case 0x03:
+							valvestatus = "异常"; // 异常
+							break;
+						default:
+							break;
+						}
+						System.out.println(maddrstr + ":" + meterread + ":" + String.format("%02x", st_l & 0xFF) + ":"
+								+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus);
+					}
+				}
+			}
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+
 	/**
 	 * 抄集中器
 	 * @param mode  0x11 ~ 单个表  0xAA ~ 单个通道  0xFF ~ 全部表
@@ -987,19 +1117,37 @@ public class ConcentratorV2 extends JFrame {
 		// cjqaddr
 		final String cjqaddr = txt_cjqaddr.getText();
 
-		if (meteraddr.length() != 14 || !meteraddr.matches("[0-9]*")) {
-			JOptionPane.showMessageDialog(contentPane, "表地址错误！");
-			return;
-		}
-		if (cjqaddr.length() != 10 || !cjqaddr.matches("[0-9]*")) {
-			JOptionPane.showMessageDialog(contentPane, "采集器地址错误！");
-			return;
-		}
-
 		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
 		byte[] framedata = null;
-		byte[] caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
-		byte[] maddr = StringUtil.string2Byte(meteraddr); // meteraddr
+
+		byte[] caddr = null; // cjqaddr
+		byte[] maddr = null; // meteraddr
+
+		switch (mode) {
+		case (byte) 0xFF:
+			break;
+		case (byte) 0xAA:
+			// cjq
+			if (cjqaddr.length() != 10 || !cjqaddr.matches("[0-9]*")) {
+				JOptionPane.showMessageDialog(contentPane, "采集器地址错误！");
+				return;
+			}
+			caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
+			break;
+		case 0x11:
+			// cjq meteraddr
+			if (meteraddr.length() != 14 || !meteraddr.matches("[0-9]*")) {
+				JOptionPane.showMessageDialog(contentPane, "表地址错误！");
+				return;
+			}
+			if (cjqaddr.length() != 10 || !cjqaddr.matches("[0-9]*")) {
+				JOptionPane.showMessageDialog(contentPane, "采集器地址错误！");
+				return;
+			}
+			caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
+			maddr = StringUtil.string2Byte(meteraddr); // meteraddr
+			break;
+		}
 		
 		switch(mode){
 		case (byte)0xFF:
@@ -1037,8 +1185,22 @@ public class ConcentratorV2 extends JFrame {
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
 			
+			byte[] ackresponse = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+
+			if (ackresponse == null) {
+				// 超时
+				System.out.println("超时");
+				return;
+			}
+			if(ackresponse[12] == 0x00){  //如果是集中器对抄表指令的ACK
+				System.out.println("jzq ack:" + StringUtil.byteArrayToHexStr(ackresponse, ackresponse.length));
+			}
+			
+			
 			boolean rcv_over = false;
 			int timeout = 0;
+			int frame_count = 0;
+			int frame_all = 0;
 			while(!rcv_over && timeout < 100){   //等待抄表结果  5min
 				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
@@ -1051,7 +1213,9 @@ public class ConcentratorV2 extends JFrame {
 					System.out.println("SEQ:"+seq);
 					device_config_ack(seq);
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-					if((response[13]&0x60) == (byte)0x60 || (response[13]&0x60) == (byte)0x20){
+					frame_all = (response[15] & 0xFF) | ((response[16] & 0xFF) << 8);
+					frame_count = (response[17] & 0xFF) | ((response[18] & 0xFF) << 8);
+					if (frame_all == frame_count) {
 						rcv_over = true;
 					}
 					//deal the frame
@@ -1214,6 +1378,8 @@ public class ConcentratorV2 extends JFrame {
 			
 			boolean rcv_over = false;
 			int timeout = 0;
+			int frame_count = 0;
+			int frame_all = 0;
 			while (!rcv_over && timeout < 10) { // 等待抄表结果 2.5min
 				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
@@ -1226,7 +1392,9 @@ public class ConcentratorV2 extends JFrame {
 					System.out.println("SEQ:" + seq);
 					device_config_ack(seq);
 					System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
-					if ((response[13] & 0x60) == (byte) 0x60 || (response[13] & 0x60) == (byte) 0x20) {
+					frame_all = (response[15] & 0xFF) | ((response[16] & 0xFF) << 8);
+					frame_count = (response[17] & 0xFF) | ((response[18] & 0xFF) << 8);
+					if (frame_all == frame_count) {
 						rcv_over = true;
 					}
 					// deal the frame
@@ -1448,10 +1616,24 @@ public class ConcentratorV2 extends JFrame {
 	}
 
 	private void device_config_syndata() {
+		// cjqaddr
+		final String cjqaddr = txt_cjqaddr.getText();
+		// cjq
+		if (cjqaddr.length() != 10 || !cjqaddr.matches("[0-9]*")) {
+			JOptionPane.showMessageDialog(contentPane, "采集器地址错误！");
+			return;
+		}
+
 		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
+		byte[] framedata = new byte[5];
+		byte[] caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
+
+		for (int i = 0; i < 5; i++) {
+			framedata[i] = caddr[4 - i];
+		}
 		
-		Frame login = new Frame(0, (byte) (Frame.ZERO | Frame.PRM_MASTER | Frame.PRM_M_SECOND), Frame.AFN_CONFIG,
-				(byte) (Frame.ZERO | Frame.SEQ_FIN | Frame.SEQ_FIR | Frame.SEQ_CON), Frame.FN_SYN, gprsaddr, null);
+		Frame login = new Frame(framedata.length, (byte) (Frame.ZERO | Frame.PRM_MASTER | Frame.PRM_M_SECOND), Frame.AFN_CONFIG,
+				(byte) (Frame.ZERO | Frame.SEQ_FIN | Frame.SEQ_FIR | Frame.SEQ_CON), Frame.FN_SYN, gprsaddr, framedata);
 
 		try {
 			SerialWriter.queue_out.clear();

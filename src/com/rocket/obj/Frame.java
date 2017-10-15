@@ -29,6 +29,8 @@ public class Frame {
 	public static final byte AFN_CONTROL = 0x04;
 	public static final byte AFN_CONFIG = 0x03;
 	public static final byte AFN_QUERY = 0x0A;
+
+	public static final byte AFN_FAKE = 0x0F;
 	
 	//Fn AFN : AFN_CONFIG  AFN_QUERY
 	public static final byte FN_IP_PORT = 2;

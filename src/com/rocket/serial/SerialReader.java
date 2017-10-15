@@ -2,7 +2,9 @@ package com.rocket.serial;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import com.rocket.util.StringUtil;
@@ -91,7 +93,7 @@ public class SerialReader implements Runnable{
 											if(cs == frame[frame_len-2] && frame[frame_len-1] == 0x16){
 												//the frame is good;
 												queue_in.put(Arrays.copyOf(frame, frame_len));
-												System.out.println("Good:~~~"+StringUtil.byteArrayToHexStr(frame, frame_len));
+												System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+":Good:~~~"+StringUtil.byteArrayToHexStr(frame, frame_len));
 											}else{
 												//这一帧有错误  放弃
 											}

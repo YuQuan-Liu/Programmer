@@ -148,8 +148,6 @@ public class MainWindow {
 				}else{
 					JOptionPane.showMessageDialog(frmRocketprogrammer, "先打开串口！");
 				}
-				ConcentratorV2 concentratorV2 = new ConcentratorV2();
-				concentratorV2.setVisible(true);
 			}
 		});
 		button_4.setFont(new Font("宋体", Font.PLAIN, 14));
