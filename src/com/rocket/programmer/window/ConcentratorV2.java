@@ -162,7 +162,7 @@ public class ConcentratorV2 extends JFrame {
 		contentPane.add(panel_1);
 		
 		combo_config = new JComboBox();
-		combo_config.setModel(new DefaultComboBoxModel(new String[] {"请选择设置项：", "设备地址", "设备IP 端口", "底层MBUS表", "底层485表", "底层采集器", "DI0在前", "DI1在前", "协议188", "协议188bad", "波特率1200", "波特率2400", "波特率4800", "波特率9600", "添加采集器", "删除全部采集器", "添加表", "删除表", "抄采集器单个表", "抄采集器单个通道", "抄采集器全部表", "抄集中器单个表", "抄集中器单个通道", "抄集中器全部", "同步采集器数据", "无线", "有线", "移动", "联通", "清空数据", "重启", "集中器LORA TEST"}));
+		combo_config.setModel(new DefaultComboBoxModel(new String[] {"请选择设置项：", "设备地址", "设备IP 端口", "底层MBUS表", "底层485表", "底层采集器", "DI0在前", "DI1在前", "协议188", "协议188bad", "波特率1200", "波特率2400", "波特率4800", "波特率9600", "添加采集器", "删除全部采集器", "添加表", "删除表", "抄采集器单个表", "抄采集器单个通道", "抄采集器全部表", "抄集中器单个表", "抄集中器单个通道", "抄集中器全部", "同步采集器数据", "无线", "有线", "移动", "联通", "清空数据", "重启", "集中器LORA TEST", "采集器LORA API"}));
 		combo_config.setSelectedIndex(0);
 		combo_config.setFont(new Font("宋体", Font.PLAIN, 14));
 		combo_config.setBounds(151, 31, 146, 24);
@@ -1088,6 +1088,9 @@ public class ConcentratorV2 extends JFrame {
 		case "集中器LORA TEST":
 			device_config_loratest();
 			break;
+		case "采集器LORA API":
+			device_config_cjqlora_api();
+			break;
 		}
 	}
 	
@@ -1646,6 +1649,46 @@ public class ConcentratorV2 extends JFrame {
 				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
 //				readProtocol();
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	private void device_config_cjqlora_api() {
+		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
+
+		byte[] framedata = new byte[1];
+		framedata[0] = 0x01;
+
+		Frame login = new Frame(1, (byte) (Frame.ZERO | Frame.PRM_MASTER | Frame.PRM_M_SECOND), Frame.AFN_CONFIG,
+				(byte) (Frame.ZERO | Frame.SEQ_FIN | Frame.SEQ_FIR | Frame.SEQ_CON), Frame.FN_LORA_API, gprsaddr, framedata);
+
+		try {
+			SerialWriter.queue_out.clear();
+			SerialReader.queue_in.clear();
+			SerialWriter.queue_out.put(login.getFrame());
+			txt_out_append(login.getFrame(),1);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+
+			if (response == null) {   // 超时
+				System.out.println("超时");
+				JOptionPane.showMessageDialog(contentPane, "超时");
+			} else {
+				txt_out_append(response,0);
+				System.out.println("response" + StringUtil.byteArrayToHexStr(response, response.length));
+				while(true){
+					response = (byte[]) SerialReader.queue_in.poll(10, TimeUnit.SECONDS);
+					
+					if(response == null){   //超时
+						System.out.println("超时");
+						JOptionPane.showMessageDialog(contentPane, "超时,请尝试重新开始");
+						break;
+					}else{
+						txt_out_append(response,0);
+						txt_out_append_data("采集器LORA接收信号强度:  "+response[15]);
+					}
+				}
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
