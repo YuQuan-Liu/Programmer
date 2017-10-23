@@ -656,6 +656,7 @@ public class ConcentratorV2 extends JFrame {
 			int timeout = 0;
 			int frame_count = 0;
 			int frame_all = 0; 
+			byte seq = (byte) 0xFF;
 			while(!rcv_over && timeout < 4){
 				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 				
@@ -664,6 +665,17 @@ public class ConcentratorV2 extends JFrame {
 				}else{
 					txt_out_append(response,0);
 					System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
+					
+					if(mode != 0x11){   //查询采集器单个通道表  全部表时  需要对数据进行应答
+						byte seq_ = (byte) (response[13] & 0x0F); // 当前帧的seq
+						System.out.println("SEQ:" + seq_);
+						device_config_ack(seq_);
+						
+						if(seq == seq_){
+							continue;
+						}
+						seq = seq_;
+					}
 					
 					frame_all = (response[15]&0xFF) | ((response[16]&0xFF)<<8);
 					frame_count = (response[17]&0xFF) | ((response[18]&0xFF)<<8);
@@ -1681,7 +1693,7 @@ public class ConcentratorV2 extends JFrame {
 					response = (byte[]) SerialReader.queue_in.poll(10, TimeUnit.SECONDS);
 					
 					if(response == null){   //超时
-						System.out.println("超时");
+						System.out.println("超时,请尝试重新开始");
 						JOptionPane.showMessageDialog(contentPane, "超时,请尝试重新开始");
 						break;
 					}else{
