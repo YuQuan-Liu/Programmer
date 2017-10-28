@@ -1782,7 +1782,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialWriter.queue_out.put(login.getFrame());
 			txt_out_append(login.getFrame(),1);
 			System.out.println(StringUtil.byteArrayToHexStr(login.getFrame(), login.getFrame().length));
-			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(10, TimeUnit.SECONDS);
 
 			if (response == null) {   // 超时
 				System.out.println("超时");
@@ -1945,7 +1945,7 @@ public class ConcentratorV2 extends JFrame {
 			SerialReader.queue_in.clear();
 			SerialWriter.queue_out.put(login.getFrame());
 			txt_out_append(login.getFrame(),1);
-			byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+			byte[] response = (byte[]) SerialReader.queue_in.poll(10, TimeUnit.SECONDS);
 			
 			if(response == null){    //超时
 				System.out.println("超时");
