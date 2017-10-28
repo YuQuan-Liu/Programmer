@@ -1891,7 +1891,7 @@ public class ConcentratorV2 extends JFrame {
 			String meters_this = "";   //本次添加的表的地址
 			
 			for(int j = 0;j < meters;j++){
-				meters_this = meteraddr_split[i*10+j] + meters_this + ":";
+				meters_this = meteraddr_split[i*10+j] + ":" + meters_this ;
 				byte[] maddr = StringUtil.string2Byte(meteraddr_split[i*10+j]);
 				for(int z = 0;z < 7;z++){
 					framedata[7+7*j + z] =  maddr[6-z];
