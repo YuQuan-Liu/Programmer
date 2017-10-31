@@ -31,15 +31,25 @@ import javax.swing.SwingWorker;
 import javax.swing.JScrollPane;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.awt.event.ActionEvent;
 
 public class ConcentratorV2 extends JFrame {
@@ -54,6 +64,7 @@ public class ConcentratorV2 extends JFrame {
 	private JComboBox combo_query;
 	private JTextArea txt_out;
 
+	Lock lock = new ReentrantLock();  
 	/**
 	 * Launch the application.
 	 */
@@ -162,7 +173,7 @@ public class ConcentratorV2 extends JFrame {
 		contentPane.add(panel_1);
 		
 		combo_config = new JComboBox();
-		combo_config.setModel(new DefaultComboBoxModel(new String[] {"请选择设置项：", "设备地址", "设备IP 端口", "底层MBUS表", "底层485表", "底层采集器", "DI0在前", "DI1在前", "协议188", "协议188bad", "波特率1200", "波特率2400", "波特率4800", "波特率9600", "添加采集器", "删除全部采集器", "添加表", "删除表", "抄采集器单个表", "抄采集器单个通道", "抄采集器全部表", "抄集中器单个表", "抄集中器单个通道", "抄集中器全部", "同步采集器数据", "无线", "有线", "移动", "联通", "清空数据", "重启", "集中器LORA TEST", "采集器LORA API"}));
+		combo_config.setModel(new DefaultComboBoxModel(new String[] {"请选择设置项：", "设备地址", "设备IP 端口", "底层MBUS表", "底层485表", "底层采集器", "DI0在前", "DI1在前", "协议188", "协议188bad", "波特率1200", "波特率2400", "波特率4800", "波特率9600", "添加采集器", "删除全部采集器", "添加表", "Excel添加表", "删除表", "抄采集器单个表", "抄采集器单个通道", "抄采集器全部表", "抄集中器单个表", "抄集中器单个通道", "抄集中器全部", "同步采集器数据", "无线", "有线", "移动", "联通", "清空数据", "重启", "集中器LORA TEST", "采集器LORA API"}));
 		combo_config.setSelectedIndex(0);
 		combo_config.setFont(new Font("宋体", Font.PLAIN, 14));
 		combo_config.setBounds(151, 31, 146, 24);
@@ -180,7 +191,17 @@ public class ConcentratorV2 extends JFrame {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						device_config();
+						
+						if(lock.tryLock()){
+							try {
+								device_config();
+							} finally {
+								lock.unlock();
+							}
+						}else{
+							txt_out_append_data("上个命令未完成，请稍后再试");
+						}
+						
 						return null;
 					}
 				}.execute();
@@ -230,7 +251,17 @@ public class ConcentratorV2 extends JFrame {
 
 					@Override
 					protected Void doInBackground() throws Exception {
-						device_query();
+						
+						if(lock.tryLock()){
+							try {
+								device_query();
+							} finally {
+								lock.unlock();
+							}
+						}else{
+							txt_out_append_data("上个命令未完成，请稍后再试");
+						}
+						
 						return null;
 					}
 				}.execute();
@@ -1054,6 +1085,9 @@ public class ConcentratorV2 extends JFrame {
 			break;
 		case "添加表":
 			device_config_meters((byte)0x01);
+			break;
+		case "Excel添加表":
+			device_config_excel_meters();
 			break;
 		case "删除表":
 			device_config_meters((byte)0x00);
@@ -1930,6 +1964,94 @@ public class ConcentratorV2 extends JFrame {
 		
 	}
 	
+	/**
+	 * Excel批量添加表
+	 */
+	private void device_config_excel_meters() {
+		JFileChooser jfc = new JFileChooser();
+		jfc.showOpenDialog(contentPane);
+		File file = jfc.getSelectedFile();
+		if(file != null){
+			txt_out_append_data("导入文件："+file.getAbsolutePath());
+			//read the excel and add
+			excel_add_meters(file.getAbsolutePath());
+			txt_out_append_data("导入完成："+file.getAbsolutePath());
+		}
+	}
+	
+	
+	
+	private void excel_add_meters(String absolutePath) {
+		InputStream input = null;
+		FileOutputStream out = null;
+		HSSFWorkbook wb = null;
+		Sheet sheet = null;
+		try {
+			input = new FileInputStream(absolutePath);
+			wb = new HSSFWorkbook(input);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		sheet = wb.getSheetAt(0);
+		Row row = null;
+		
+		int rows = sheet.getLastRowNum();
+		String cjqaddr_ = "";
+		String result = null;
+		
+		LinkedHashMap<String, List<String>> cjq_meters = new LinkedHashMap<>();
+		List<String> meters = null;
+		for(int i = 0;i <= rows;i++){
+			row = sheet.getRow(i);
+			String cjqaddr = row.getCell(0).getStringCellValue();
+			String meteraddr = row.getCell(1).getStringCellValue();
+			//验证采集器地址  表地址
+			if(check_cjqaddr(cjqaddr) && check_meteraddr(meteraddr)){
+				row.createCell(3).setCellValue("地址有误!");
+				break;
+			}
+			
+			if(cjqaddr_.equals(cjqaddr)){
+				meters.add(meteraddr);
+			}else{
+				meters = new ArrayList<>();
+				if(cjqaddr_.equals("")){
+					meters.add(meteraddr);
+				}else{
+					cjq_meters.put(cjqaddr, meters);
+					cjqaddr_ = cjqaddr;
+				}
+				
+			}
+		}
+		
+		try {
+			out = new FileOutputStream(absolutePath);
+			wb.write(out);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private boolean check_meteraddr(String meteraddr) {
+		if(meteraddr.length() != 14 || !meteraddr.matches("[0-9]*")){
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	private boolean check_cjqaddr(String cjqaddr) {
+		if(cjqaddr.length() != 10 || !cjqaddr.matches("[0-9]*")){
+			return false;
+		}else{
+			return true;
+		}
+	}
+
 	private void device_config_deletecjqs() {
 		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
 		
