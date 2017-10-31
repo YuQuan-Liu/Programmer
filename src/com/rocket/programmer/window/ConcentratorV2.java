@@ -47,6 +47,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -403,6 +404,16 @@ public class ConcentratorV2 extends JFrame {
 	}
 
 	private void device_query_read_result() {
+		
+		Workbook wb = new HSSFWorkbook();
+		Sheet sheet = wb.createSheet("meterread");
+		Row row = sheet.createRow(0);
+		row.createCell(0).setCellValue("表地址");
+		row.createCell(1).setCellValue("表读数");
+		row.createCell(2).setCellValue("表状态");
+		row.createCell(3).setCellValue("阀状态");
+		int rowcount = 1;
+		
 		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
 		
 		Frame login = new Frame(0, (byte) (Frame.ZERO | Frame.PRM_MASTER | Frame.PRM_M_SECOND),
@@ -495,10 +506,16 @@ public class ConcentratorV2 extends JFrame {
 										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
 						System.out.println(data_str);
 						txt_out_append_data(data_str);
+						append_sheet_row(sheet,rowcount++,maddrstr,meterread,readresult,valvestatus);
 					}
 				}
 			}
-			
+
+			String excelpath = System.getProperty("user.dir")+"\\表读数"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime())+".xls";
+			FileOutputStream fileOut = new FileOutputStream(excelpath);
+			wb.write(fileOut);
+		    fileOut.close();
+		    txt_out_append_data("导出Excel："+excelpath);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -614,7 +631,13 @@ public class ConcentratorV2 extends JFrame {
 		// cjqaddr
 		final String cjqaddr = txt_cjqaddr.getText();
 
-		
+		Workbook wb = new HSSFWorkbook();
+		Sheet sheet = wb.createSheet("meterinfo");
+		Row row = sheet.createRow(0);
+		row.createCell(0).setCellValue("采集器地址");
+		row.createCell(1).setCellValue("表地址");
+		int rowcount = 1;
+		boolean savetoexcel = true;
 		
 		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
 		byte[] framedata = null;
@@ -642,6 +665,7 @@ public class ConcentratorV2 extends JFrame {
 			}
 			caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
 			maddr = StringUtil.string2Byte(meteraddr); // meteraddr
+			savetoexcel = false;
 			break;
 		}
 		
@@ -738,8 +762,18 @@ public class ConcentratorV2 extends JFrame {
 						String data_str = "cjqaddr:"+cjqaddrstr+";meteraddr:"+maddrstr;
 						System.out.println(data_str);
 						txt_out_append_data(data_str);
+						if(savetoexcel){
+							append_sheet_row(sheet,rowcount++,cjqaddrstr,maddrstr);
+						}
 					}
 				}
+			}
+			if(savetoexcel){
+				String excelpath = System.getProperty("user.dir")+"\\表信息"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime())+".xls";
+				FileOutputStream fileOut = new FileOutputStream(excelpath);
+				wb.write(fileOut);
+			    fileOut.close();
+			    txt_out_append_data("导出Excel："+excelpath);
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -1142,6 +1176,15 @@ public class ConcentratorV2 extends JFrame {
 	
 	private void device_config_readjzq_all() {
 		
+		Workbook wb = new HSSFWorkbook();
+		Sheet sheet = wb.createSheet("meterread");
+		Row row = sheet.createRow(0);
+		row.createCell(0).setCellValue("表地址");
+		row.createCell(1).setCellValue("表读数");
+		row.createCell(2).setCellValue("表状态");
+		row.createCell(3).setCellValue("阀状态");
+		int rowcount = 1;
+				
 		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
 		byte[] framedata = new byte[1];
 		framedata[0] = (byte) 0xFF;
@@ -1251,10 +1294,15 @@ public class ConcentratorV2 extends JFrame {
 										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
 						System.out.println(data_str);
 						txt_out_append_data(data_str);
+						append_sheet_row(sheet,rowcount++,maddrstr,meterread,readresult,valvestatus);
 					}
 				}
 			}
-
+			String excelpath = System.getProperty("user.dir")+"\\表读数"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime())+".xls";
+			FileOutputStream fileOut = new FileOutputStream(excelpath);
+			wb.write(fileOut);
+		    fileOut.close();
+		    txt_out_append_data("导出Excel："+excelpath);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -1276,6 +1324,16 @@ public class ConcentratorV2 extends JFrame {
 		byte[] caddr = null; // cjqaddr
 		byte[] maddr = null; // meteraddr
 
+		Workbook wb = new HSSFWorkbook();
+		Sheet sheet = wb.createSheet("meterread");
+		Row row = sheet.createRow(0);
+		row.createCell(0).setCellValue("表地址");
+		row.createCell(1).setCellValue("表读数");
+		row.createCell(2).setCellValue("表状态");
+		row.createCell(3).setCellValue("阀状态");
+		int rowcount = 1;
+		boolean savetoexcel = false;
+		
 		switch (mode) {
 		case (byte) 0xFF:
 			break;
@@ -1286,6 +1344,7 @@ public class ConcentratorV2 extends JFrame {
 				return;
 			}
 			caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
+			savetoexcel = true;
 			break;
 		case 0x11:
 			// cjq meteraddr
@@ -1429,16 +1488,24 @@ public class ConcentratorV2 extends JFrame {
 										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
 						System.out.println(data_str);
 						txt_out_append_data(data_str);
-						
+						if(savetoexcel){
+							append_sheet_row(sheet,rowcount++,maddrstr,meterread,readresult,valvestatus);
+						}
 					}
 				}
 			}
-			
+			if(savetoexcel){
+				String excelpath = System.getProperty("user.dir")+"\\表读数"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime())+".xls";
+				FileOutputStream fileOut = new FileOutputStream(excelpath);
+				wb.write(fileOut);
+			    fileOut.close();
+			    txt_out_append_data("导出Excel："+excelpath);
+			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 	}
-
+	
 	private void device_config_readcjq(byte mode) {
 		// meteraddr
 		final String meteraddr = txt_meteraddr.getText();
@@ -1453,6 +1520,16 @@ public class ConcentratorV2 extends JFrame {
 		byte[] caddr = null; // cjqaddr
 		byte[] maddr = null; // meteraddr
 		
+		Workbook wb = new HSSFWorkbook();
+		Sheet sheet = wb.createSheet("meterread");
+		Row row = sheet.createRow(0);
+		row.createCell(0).setCellValue("表地址");
+		row.createCell(1).setCellValue("表读数");
+		row.createCell(2).setCellValue("表状态");
+		row.createCell(3).setCellValue("阀状态");
+		int rowcount = 1;
+		boolean savetoexcel = false;
+		
 		switch (mode) {
 		case (byte) 0xAA:
 		case (byte) 0xFF:
@@ -1462,6 +1539,7 @@ public class ConcentratorV2 extends JFrame {
 				return;
 			}
 			caddr = StringUtil.string2Byte(cjqaddr); // cjqaddr
+			savetoexcel = true;
 			break;
 		case 0x11:
 			//cjq meteraddr
@@ -1617,15 +1695,34 @@ public class ConcentratorV2 extends JFrame {
 										+ String.format("%02x", st_h & 0xFF) + ":" + readresult + ":" + valvestatus;
 						System.out.println(data_str);
 						txt_out_append_data(data_str);
+						if(savetoexcel){
+							append_sheet_row(sheet,rowcount++,maddrstr,meterread,readresult,valvestatus);
+						}
 					}
 				}
 			}
 
+			if(savetoexcel){
+				String excelpath = System.getProperty("user.dir")+"\\表读数"+new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime())+".xls";
+				FileOutputStream fileOut = new FileOutputStream(excelpath);
+				wb.write(fileOut);
+			    fileOut.close();
+			    txt_out_append_data("导出Excel："+excelpath);
+			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		
 	}
 	
+	private void append_sheet_row(Sheet sheet, int rowcount, String... datas) {
+		Row row = sheet.createRow(rowcount);
+		
+		for (int i = 0; i< datas.length;i++) {
+			row.createCell(i).setCellValue(datas[i]);
+		}
+	}
+
 	private void device_config_ack(byte seq){
 		byte[] gprsaddr = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
 		
@@ -1898,6 +1995,12 @@ public class ConcentratorV2 extends JFrame {
 			return;
 		}
 		
+		config_meters(add_delete, cjqaddr, meteraddr_split);
+		
+	}
+
+	private void config_meters(byte add_delete, final String cjqaddr, String[] meteraddr_split) {
+		int metercount = meteraddr_split.length;
 		//将表地址分成多组添加
 		int times = metercount / 10;  //10个一组添加多少次
 		int remain = metercount % 10;
@@ -1961,7 +2064,6 @@ public class ConcentratorV2 extends JFrame {
 				e1.printStackTrace();
 			}
 		}
-		
 	}
 	
 	/**
@@ -1998,32 +2100,31 @@ public class ConcentratorV2 extends JFrame {
 		
 		int rows = sheet.getLastRowNum();
 		String cjqaddr_ = "";
-		String result = null;
 		
 		LinkedHashMap<String, List<String>> cjq_meters = new LinkedHashMap<>();
-		List<String> meters = null;
+		
 		for(int i = 0;i <= rows;i++){
 			row = sheet.getRow(i);
 			String cjqaddr = row.getCell(0).getStringCellValue();
 			String meteraddr = row.getCell(1).getStringCellValue();
 			//验证采集器地址  表地址
-			if(check_cjqaddr(cjqaddr) && check_meteraddr(meteraddr)){
+			if(!check_cjqaddr(cjqaddr) || !check_meteraddr(meteraddr)){
 				row.createCell(3).setCellValue("地址有误!");
 				break;
 			}
 			
 			if(cjqaddr_.equals(cjqaddr)){
-				meters.add(meteraddr);
+				cjq_meters.get(cjqaddr).add(meteraddr);
 			}else{
-				meters = new ArrayList<>();
-				if(cjqaddr_.equals("")){
-					meters.add(meteraddr);
-				}else{
-					cjq_meters.put(cjqaddr, meters);
-					cjqaddr_ = cjqaddr;
-				}
-				
+				cjq_meters.put(cjqaddr, new ArrayList<String>());
+				cjqaddr_ = cjqaddr;
+				cjq_meters.get(cjqaddr).add(meteraddr);
 			}
+		}
+		
+		for (Entry<String, List<String>> entry : cjq_meters.entrySet()) {
+			config_addcjq(entry.getKey());
+			config_meters((byte)0x01, entry.getKey(), entry.getValue().toArray(new String[0]));
 		}
 		
 		try {
@@ -2091,6 +2192,11 @@ public class ConcentratorV2 extends JFrame {
 			JOptionPane.showMessageDialog(contentPane, "采集器地址错误！");
 			return;
 		}
+		config_addcjq(cjqaddr);
+		
+	}
+
+	private void config_addcjq(String cjqaddr) {
 		byte[] gprsaddr = new byte[]{(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF};
 		
 		byte[] framedata = new byte[6];
@@ -2123,7 +2229,6 @@ public class ConcentratorV2 extends JFrame {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		
 	}
 
 	private void device_config_baud(byte meter_baud) {
