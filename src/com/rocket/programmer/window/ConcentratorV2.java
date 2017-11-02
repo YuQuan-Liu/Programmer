@@ -2063,7 +2063,11 @@ public class ConcentratorV2 extends JFrame {
 		for(int i = 0;i < times;i++){
 			int meters = 10;
 			if(i == times - 1){
-				meters = remain;
+				if(remain == 0){
+					meters = 10;
+				}else{
+					meters = remain;
+				}
 			}
 			
 			byte[] framedata = new byte[meters*7+7]; 
@@ -2095,7 +2099,7 @@ public class ConcentratorV2 extends JFrame {
 				SerialReader.queue_in.clear();
 				SerialWriter.queue_out.put(login.getFrame());
 				txt_out_append(login.getFrame(),1);
-				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
+				byte[] response = (byte[]) SerialReader.queue_in.poll(5, TimeUnit.SECONDS);
 				
 				String result = "";
 				if(response == null){     //超时
@@ -2110,6 +2114,7 @@ public class ConcentratorV2 extends JFrame {
 					txt_out_append_data(data_str);
 					
 				}
+				Thread.sleep(100);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
