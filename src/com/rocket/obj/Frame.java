@@ -51,6 +51,7 @@ public class Frame {
 	public static final byte FN_ALL_READDATA = 22; 	 //查询采集器下所有的抄表结果
 	public static final byte FN_SIMCARD = 23; 	 //联通移动卡
 	public static final byte FN_LORA_API = 24; 	 //采集器接收集中器LORA TEST  并返回信号强度
+	public static final byte FN_SYNING = 24; 	 //是否在同步数据
 	
 	public static final byte FN_VERSION = (byte)0xFF;  //程序版本号 
 	
