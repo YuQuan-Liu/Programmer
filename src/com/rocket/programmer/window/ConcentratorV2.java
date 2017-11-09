@@ -814,7 +814,7 @@ public class ConcentratorV2 extends JFrame {
 			}else{  //接收到ACK
 				txt_out_append(response,0);
 				System.out.println("response"+StringUtil.byteArrayToHexStr(response, response.length));
-				response = (byte[]) SerialReader.queue_in.poll(60, TimeUnit.SECONDS);   //等待SYN结果
+				response = (byte[]) SerialReader.queue_in.poll(90, TimeUnit.SECONDS);   //等待SYN结果
 				if(response == null){ //超时
 					System.out.println("SYN超时");
 					JOptionPane.showMessageDialog(contentPane, "SYN超时");
