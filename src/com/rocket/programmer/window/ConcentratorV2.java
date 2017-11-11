@@ -1263,7 +1263,7 @@ public class ConcentratorV2 extends JFrame {
 			int timeout = 0;
 			int frame_count = 0;
 			int frame_all = 0;
-			while (!rcv_over && timeout < 100) { // 等待抄表结果 5min
+			while (!rcv_over && timeout < 400) { // 等待抄表结果 5min
 				byte[] response = (byte[]) SerialReader.queue_in.poll(3, TimeUnit.SECONDS);
 
 				if (response == null) {   // 超时
